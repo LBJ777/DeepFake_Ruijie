@@ -1,6 +1,6 @@
 % !TeX encoding = UTF-8
 % !TeX program = pdflatex
-\documentclass[lettersize,journal]{IEEEtran}
+\documentclass[letterpaper,journal]{IEEEtran}
 
 % Mathematics
 \usepackage{amsmath,amssymb,amsfonts}
@@ -16,7 +16,6 @@
 % Figures and graphics
 \usepackage{graphicx}
 \usepackage[caption=false,font=normalsize,labelfont=sf,textfont=sf]{subfig}
-\usepackage{capt-of}
 \usepackage{rotating}
 \usepackage{stfloats}
 \usepackage{placeins}
@@ -29,7 +28,6 @@
 \usepackage{textcomp}
 \usepackage{pifont}
 \usepackage{afterpage}
-\usepackage{balance}
 \usepackage{verbatim}
 \usepackage{xcolor}
 \usepackage{url}
@@ -41,13 +39,11 @@
 \usepackage{hyperref}
 
 \newcolumntype{Y}{>{\centering\arraybackslash}X}
+\newcolumntype{Z}{>{\raggedright\arraybackslash}X}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \hypersetup{
     linktocpage=true,
-    pdfborderstyle={/S/S/W 1},
-    hyperindex=true,
-    bookmarks=false,
-    bookmarksopen=false,
-    bookmarksnumbered=false
+    pdfborderstyle={/S/S/W 1}
 }
 
 % Paths for manuscript assets.
@@ -88,16 +84,6 @@
 \markboth{Manuscript under review}%
 {Anonymous Authors: FUSEGuard}
 
-\IEEEaftertitletext{%
-\vspace{0.3\baselineskip}
-\begin{center}
-\includegraphics[width=0.98\textwidth]{Fig/fig1_aigcdetectbenchmark_radar.png}
-\captionof{figure}{Comparison on AIGCDetectBenchmark. We conduct a 17-generator AI-generated image detection benchmark, including GAN, diffusion, and commercial generator families such as ProGAN, StyleGAN, BigGAN, CycleGAN, StarGAN, GauGAN, StyleGAN2, WhichFaceIsReal (WFIR), ADM, GLIDE, Midjourney, Stable Diffusion v1.4/v1.5, VQDM, Wukong, DALL-E 2, and SDXL. Representative classic and recent detectors \cite{wang2020cnnspot,zhong2023patchcraft,ojha2023univfd,tan2024npr,yan2025aide,liu2024fatformer,koutlis2024rine,tan2025c2pclip,cheng2025cospy} are presented in the benchmark, and their reported detection accuracies are visualized with radar charts. The concentric circles denote detection accuracy from 0\% to 100\%. FUSEGuard achieves the highest mean accuracy in this selected comparison, reaching 94.82\% and outperforming AIDE, a strong contemporary baseline, by 2.09 percentage points.}
-\label{fig:aigcdetectbenchmark_radar}
-\end{center}
-\vspace{0.2\baselineskip}
-}
-
 \maketitle
 
 \begin{abstract}
@@ -107,6 +93,13 @@ AI-generated image detection is increasingly a deployment problem: a detector tr
 \begin{IEEEkeywords}
 AI-generated image detection, deepfake detection, cross-generator generalization, source-only calibration, multi-prior fusion.
 \end{IEEEkeywords}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.98\textwidth]{Fig/fig1_aigcdetectbenchmark_radar.png}
+\caption{Comparison on AIGCDetectBenchmark. The radar charts summarize Acc over 17 generator families, covering GAN, diffusion, and commercial generators: ProGAN, StyleGAN, BigGAN, CycleGAN, StarGAN, GauGAN, StyleGAN2, WhichFaceIsReal (WFIR), ADM, GLIDE, Midjourney, Stable Diffusion v1.4/v1.5, VQDM, Wukong, DALL-E 2, and SDXL. Representative classic and recent detectors \cite{wang2020cnnspot,zhong2023patchcraft,ojha2023univfd,tan2024npr,yan2025aide,liu2024fatformer,koutlis2024rine,tan2025c2pclip,cheng2025cospy} are compared using the same radial scale from 0\% to 100\%. FUSEGuard reaches 94.82\% mean Acc, outperforming AIDE by 2.09 percentage points in this selected comparison.}
+\label{fig:aigcdetectbenchmark_radar}
+\end{figure*}
 
 \section{Introduction}
 \label{sec:introduction}
@@ -123,7 +116,7 @@ Figure~\ref{fig:prior_evidence_map} illustrates the evidence motivation behind o
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{Fig/fig2_prior_evidence_map.png}
-\caption{Prior evidence maps for FUSEGuard. Each row shows an input image and three prior-derived evidence views: the absolute residual map after low-pass removal, the log-magnitude Fourier spectrum, and the spatial fine-texture energy map. The upper block contains real images, while the lower block contains generated images. These examples illustrate how residual, spectral, and local-texture responses can expose signals that are not obvious in RGB space, motivating their use as complementary evidence for AI-generated image detection.}
+\caption{Prior evidence maps for FUSEGuard. Columns show the input image, the absolute residual map after low-pass removal, the log-magnitude Fourier spectrum, and the spatial fine-texture energy map. The upper block contains real images, and the lower block contains generated images. These examples illustrate how residual, spectral, and local-texture responses can expose signals that are not obvious in RGB space, motivating their use as complementary evidence for AI-generated image detection.}
 \label{fig:prior_evidence_map}
 \end{figure}
 
@@ -177,7 +170,7 @@ As generators diversify, evaluation protocol has become inseparable from detecto
 We begin by defining the detection setting and the source-only rule that constrains all later design choices.
 
 \textbf{Task definition.}
-We study binary detection of AI-generated images. Given an RGB image $x \in \mathcal{X}$, the label $y \in \{0,1\}$ indicates whether the image is real ($y=0$) or generated by an AI model ($y=1$). A detector produces a scalar fake score $f(x) \in [0,1]$, where larger values indicate stronger evidence that $x$ is generated. Unless stated otherwise, the final decision uses the fixed operating threshold $\hat{y}(x)=\mathbb{I}\left[f(x)\geq0.50\right]$. This fixed-threshold rule is part of the evaluated detector rather than a post-hoc choice made on a target benchmark.
+We study binary detection of AI-generated images. Given an RGB image $x \in \mathcal{X}$, the label $y \in \{0,1\}$ indicates whether the image is real ($y=0$) or generated by an AI model ($y=1$). A detector produces a scalar fake score $f(x) \in [0,1]$, where larger values indicate stronger evidence that $x$ is generated. Unless stated otherwise, the final decision uses the fixed operating threshold $\hat{y}(x)=\mathbb{I}\{f(x)\geq0.50\}$. This fixed-threshold rule is part of the evaluated detector rather than a post-hoc choice made on a target benchmark.
 
 \textbf{Source and target domains.}
 Let $\mathcal{D}_{s}=\{(x_i^s,y_i^s)\}_{i=1}^{n_s}$ denote the source data available before deployment. In our implementation, the source data come from the ProGAN training split with balanced real and generated images. We separate source use into two auditable roles: source-fitted component training, denoted by $\mathcal{D}_{s}^{\mathrm{fit}}$ when a fit/gate split is explicitly materialized, and a recorded source-gate subset $\mathcal{D}_{s}^{\mathrm{gate}}$ used to select fusion constants from cached component scores. The recorded materialization uses seed 100 and assigns 80,000 source images to the fit role and 20,000 to the gate role, with 2,000 fit and 500 gate images for each class-label cell. The promoted runtime checkpoints are therefore described as source-fitted checkpoints, while the promoted fusion constants are source-gate selected. Let $\mathcal{D}_{t}^{g}=\{(x_i^{t,g},y_i^{t,g})\}_{i=1}^{n_g}$ denote a report-only target set associated with a generator or benchmark condition $g$. The target domain may differ from the source domain in generator architecture, image content, synthesis pipeline, resolution, and post-processing. The goal is therefore not in-domain source accuracy alone, but transfer of a locked detector from $\mathcal{D}_{s}$ to unseen target generators $\mathcal{G}_{t}$.
@@ -197,7 +190,7 @@ In the locking stage, source-fitted artifact, semantic, and residual priors are 
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{Fig/fuseguard_overview_placeholder.png}
+\includegraphics[width=\textwidth]{Fig/fuseguard_overview_v3.png}
 \caption{Overview of FUSEGuard. The upper branch shows source-only locking: source-fitted priors produce a source-gate component cache, from which compact fusion constants are selected under a fixed threshold. The lower branch shows locked inference: an input image is scored by whole-image artifact, native-tile artifact, semantic, and residual priors, then fused in logit space to produce the final fake score and fixed-threshold decision.}
 \label{fig:fuseguard_overview}
 \end{figure*}
@@ -210,7 +203,7 @@ The remainder of this section follows the same pipeline: multi-prior scoring, so
 \centering
 \renewcommand{\arraystretch}{1.12}
 \setlength{\tabcolsep}{2.5pt}
-\begin{tabularx}{\textwidth}{@{}p{0.10\textwidth}p{0.14\textwidth}X p{0.18\textwidth}p{0.16\textwidth}@{}}
+\begin{tabularx}{\textwidth}{@{}L{0.10\textwidth}L{0.14\textwidth}Z L{0.18\textwidth}L{0.16\textwidth}@{}}
 \toprule
 Score & Input view & Source-fitted model & Locked preprocessing & Output role \\
 \midrule
@@ -271,7 +264,7 @@ Whole-image resizing can dilute local high-resolution artifacts. FUSEGuard there
 \[
     T(x)=\max_{j} A_{\mathrm{clean}}(t_j),
 \]
-where $\{t_j\}$ are the extracted native tiles. Tile evidence enters the fused detector only as a positive logit increment over the whole-image score:
+where $\{t_j\}$ are the extracted native tiles. The positive tile increment over the whole-image score is
 \[
     \Delta_T(x)=\max\left(0,\ell(T(x))-\ell(W(x))\right).
 \]
@@ -298,17 +291,17 @@ FUSEGuard fuses the four prior scores in logit space. Let $m(x)$ indicate whethe
 \[
     \alpha_{+}(x)=
     \begin{cases}
-    \alpha_{\mathrm{high}+}, & m(x)=1,\\
-    \alpha_{\mathrm{low}+}, & m(x)=0,
+    \alpha_{\mathrm{high},+}, & m(x)=1,\\
+    \alpha_{\mathrm{low},+}, & m(x)=0,
     \end{cases}
 \]
 and the semantic coefficient for negative evidence is
 \[
     \alpha_{-}(x)=
     \begin{cases}
-    \alpha_{\mathrm{high}-}, & m(x)=1 \ \mathrm{and}\ \Delta_T(x)>0,\\
-    \alpha_{\mathrm{high}-}^{\mathrm{guard}}, & m(x)=1 \ \mathrm{and}\ \Delta_T(x)\leq 0,\\
-    \alpha_{\mathrm{low}-}, & m(x)=0.
+    \alpha_{\mathrm{high},-}, & m(x)=1 \ \mathrm{and}\ \Delta_T(x)>0,\\
+    \alpha_{\mathrm{high},-}^{\mathrm{guard}}, & m(x)=1 \ \mathrm{and}\ \Delta_T(x)\leq 0,\\
+    \alpha_{\mathrm{low},-}, & m(x)=0.
     \end{cases}
 \]
 The semantic logit contribution is
@@ -337,20 +330,20 @@ and the final fake score is
 \STATE Compute semantic score $S(x)$ using frozen CLIP features and the source-fitted linear probe.
 \STATE Compute residual score $R(x)$ from nearest-neighbor down-up residuals.
 \STATE $\Delta_T(x)\leftarrow\max(0,\ell(T(x))-\ell(W(x)))$
-\STATE $m(x)\leftarrow\mathbb{I}[\max\mathrm{side}(x)>960]$
+\STATE $m(x)\leftarrow\mathbb{I}\{\operatorname{maxside}(x)>960\}$
 \STATE Set $\alpha_+(x)$ from $m(x)$ and set $\alpha_-(x)$ using the high-resolution guard.
 \STATE $u_S\leftarrow\max(0,\ell(S(x)))$, \quad $v_S\leftarrow\min(0,\ell(S(x)))$
 \STATE $\Psi_S(x)\leftarrow\alpha_+(x)u_S+\alpha_-(x)v_S$
 \STATE $B(x)\leftarrow\sigma(\ell(W(x))+\beta\Delta_T(x)+\Psi_S(x))$
 \STATE $f(x)\leftarrow\sigma(\ell(B(x))+\gamma\ell(R(x)))$
-\STATE $\hat{y}(x)\leftarrow\mathbb{I}[f(x)\geq\tau]$
+\STATE $\hat{y}(x)\leftarrow\mathbb{I}\{f(x)\geq\tau\}$
 \RETURN $f(x),\hat{y}(x)$
 \end{algorithmic}
 \end{algorithm}
 
-The fusion rule separates its functional form from its locked numerical instantiation. We select the constants once from source-gate component scores and source labels only, using the search in Algorithm~\ref{alg:source_locking}. The source-gate search uses the compact scale grid $\{0.75,1.00,1.25,1.50,1.75,2.00\}$ for the tile, positive semantic, negative semantic, and residual terms. A candidate is accepted only if it satisfies the source BA, AP, AUC, fixed-threshold flip-rate, mean-drift, and real-side log-loss constraints defined in the source-locking record. This search accepts 231 of 1,296 compact-scale candidates and selects the candidate with tile scale 1.25, positive semantic scale 2.00, negative semantic scale 1.25, and residual scale 1.75 relative to the source-gamma anchor. After folding these scales into the runtime configuration, the selected configuration uses $\beta=0.25$ for the tile increment and $\gamma=0.21$ for the residual correction. For semantic evidence, it uses $\alpha_{\mathrm{low}+}=0.30$ and $\alpha_{\mathrm{low}-}=0.1875$ on low-resolution images, and $\alpha_{\mathrm{high}+}=0.40$, $\alpha_{\mathrm{high}-}=0.00$, and $\alpha_{\mathrm{high}-}^{\mathrm{guard}}=0.25$ on high-resolution images. These values are fixed before any target report is generated.
+The fusion rule separates its functional form from its locked numerical instantiation. We select the constants once from source-gate component scores and source labels only, using the search in Algorithm~\ref{alg:source_locking}. The source-gate search uses the compact scale grid $\{0.75,1.00,1.25,1.50,1.75,2.00\}$ for the tile, positive semantic, negative semantic, and residual terms. A candidate is accepted only if it satisfies the source BA, AP, AUC, fixed-threshold flip-rate, mean-drift, and real-side log-loss constraints defined in the source-locking record. This search accepts 231 of 1,296 compact-scale candidates and selects the candidate with tile scale 1.25, positive semantic scale 2.00, negative semantic scale 1.25, and residual scale 1.75 relative to the source-gamma anchor. After folding these scales into the runtime configuration, the selected configuration uses $\beta=0.25$ for the tile increment and $\gamma=0.21$ for the residual correction. For semantic evidence, it uses $\alpha_{\mathrm{low},+}=0.30$ and $\alpha_{\mathrm{low},-}=0.1875$ on low-resolution images, and $\alpha_{\mathrm{high},+}=0.40$, $\alpha_{\mathrm{high},-}=0.00$, and $\alpha_{\mathrm{high},-}^{\mathrm{guard}}=0.25$ on high-resolution images. These values are fixed before any target report is generated.
 
-The final decision is $\hat{y}(x)=\mathbb{I}\left[f(x)\geq0.50\right]$, where the threshold is not tuned on target generators. Thus the target benchmarks evaluate a locked detector, rather than selecting fusion parameters, score variants, or an operating point. Algorithm~\ref{alg:locked_inference} summarizes the complete locked inference procedure for a test image.
+The final decision is $\hat{y}(x)=\mathbb{I}\{f(x)\geq0.50\}$, where the threshold is not tuned on target generators. Thus the target benchmarks evaluate a locked detector, rather than selecting fusion parameters, score variants, or an operating point. Algorithm~\ref{alg:locked_inference} summarizes the complete locked inference procedure for a test image.
 
 
 
@@ -643,7 +636,7 @@ The single-prior rows further show that no branch can replace the complete fusio
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=0.8\textwidth]{Fig/fig5_aigcdetectbenchmark_parameter_sensitivity.png}
-\caption{Parameter sensitivity of FUSEGuard on AIGCDetectBenchmark. Each panel varies one fusion coefficient family while the remaining locked terms are held fixed and reports mean fixed-threshold accuracy across target generators. Gold stars mark the source-selected coefficients, vertical bands show the corresponding selected values, and the dashed line denotes the selected full-model accuracy. The panels examine the tile artifact weight $\beta$, positive semantic coefficients, negative semantic coefficients, and the residual correction weight $\gamma$. The selected constants lie within broad high-accuracy regions rather than at isolated target-specific spikes.}
+\caption{Parameter sensitivity of FUSEGuard on AIGCDetectBenchmark. Each panel varies one fusion coefficient family while the remaining locked terms are held fixed and reports mean fixed-threshold accuracy across target generators. Gold stars mark the source-selected coefficients, vertical bands show the corresponding selected values, and the dashed line denotes the selected full-model accuracy. The panels examine the tile artifact weight $\beta$, positive semantic coefficients $\alpha_{\mathrm{low},+}$ and $\alpha_{\mathrm{high},+}$, negative semantic coefficients $\alpha_{\mathrm{low},-}$ and $\alpha_{\mathrm{high},-}^{\mathrm{guard}}$, and the residual correction weight $\gamma$. The selected constants lie within broad high-accuracy regions rather than at isolated target-specific spikes.}
 \label{fig:parameter_sensitivity}
 \end{figure*}
 
@@ -693,7 +686,7 @@ This work examined a practical question for cross-generator AI-generated image d
 This appendix records the benchmark composition used by the external evaluations. Tables~\ref{tab:appendix_genimage_statistics} and \ref{tab:appendix_ufd_statistics} list the source generator, target generators, image sizes, sample counts, and image sources for GenImage and UniversalFakeDetect, respectively. We keep these statistics separate from the performance tables so that the evaluation protocol is explicit before the scores are read. In both tables, Number denotes the total image count for each row, including generated images and paired real images from the same source unless otherwise noted.
 
 \begin{table*}[!b]
-\caption{\textbf{Statistics of Benchmark GenImage.} SD refers to Stable Diffusion. Number reports the total image count for each row, including generated images and paired real images from the same source.}
+\caption{Statistics of Benchmark GenImage. SD refers to Stable Diffusion. Number reports the total image count for each row, including generated images and paired real images from the same source.}
 \label{tab:appendix_genimage_statistics}
 \centering
 \small
@@ -719,7 +712,7 @@ This appendix records the benchmark composition used by the external evaluations
 \end{table*}
 
 \begin{table*}[!b]
-\caption{\textbf{Statistics of Benchmark UniversalFakeDetect \cite{ojha2023univfd,wang2020cnnspot}.} Number reports the total image count for each row. The train row follows our 100k ProGAN-source protocol. Image Size follows the released benchmark preprocessing; variable denotes released native/restoration resolutions rather than one fixed square size.}
+\caption{Statistics of Benchmark UniversalFakeDetect \cite{ojha2023univfd,wang2020cnnspot}. Number reports the total image count for each row. The train row follows our 100k ProGAN-source protocol. Image Size follows the released benchmark preprocessing; variable denotes released native/restoration resolutions rather than one fixed square size.}
 \label{tab:appendix_ufd_statistics}
 \centering
 \small
@@ -842,7 +835,7 @@ Tables~\ref{tab:appendix_ufd_prior_ablation} and \ref{tab:appendix_genimage_prio
 \setlength{\tabcolsep}{1.6pt}
 \begin{minipage}[t]{0.49\textwidth}
 \centering
-\caption{\textbf{Core component ablation on UniversalFakeDetect.}}
+\caption{Core component ablation on UniversalFakeDetect.}
 \label{tab:appendix_ufd_prior_ablation}
 \begin{tabular}{@{}ccccrrrr@{}}
 \toprule
@@ -867,7 +860,7 @@ Artifact & Semantic & Residual & Native tile & \multicolumn{1}{c}{Acc} & \multic
 \hfill
 \begin{minipage}[t]{0.49\textwidth}
 \centering
-\caption{\textbf{Core component ablation on GenImage.}}
+\caption{Core component ablation on GenImage.}
 \label{tab:appendix_genimage_prior_ablation}
 \begin{tabular}{@{}ccccrrrr@{}}
 \toprule
@@ -894,7 +887,6 @@ Artifact & Semantic & Residual & Native tile & \multicolumn{1}{c}{Acc} & \multic
 The external ablations are consistent with the main AIGCDetectBenchmark analysis. Removing a prior changes the Real/Fake balance rather than only reducing the mean score, and artifact-only variants remain asymmetric across benchmarks. The full configuration is therefore retained as the reportable setting because it is the only one that jointly preserves high Acc, high AP, and stable class-wise behavior under both external source protocols.
 
 \clearpage
-\balance
 \bibliographystyle{IEEEtran_doi}
 \bibliography{ref}
 

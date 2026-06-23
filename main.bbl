@@ -413,7 +413,8 @@ T.~Karras, S.~Laine, M.~Aittala, J.~Hellsten, J.~Lehtinen, and T.~Aila,
 
 \bibitem{whichfaceisreal2023}
 J.~West and C.~Bergstrom, ``{WhichFaceIsReal},''
-  \url{https://www.whichfaceisreal.com}, 2023, accessed: Mar. 26, 2025.
+  \href{https://www.whichfaceisreal.com}{whichfaceisreal.com}, 2023, accessed:
+  Mar. 26, 2025.
 
 \bibitem{nichol2022glide}
 A.~Q. Nichol, P.~Dhariwal, A.~Ramesh, P.~Shyam, P.~Mishkin, B.~McGrew,
