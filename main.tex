@@ -1,0 +1,901 @@
+% !TeX encoding = UTF-8
+% !TeX program = pdflatex
+\documentclass[lettersize,journal]{IEEEtran}
+
+% Mathematics
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{mathtools}
+
+% Tables
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{colortbl}
+
+% Figures and graphics
+\usepackage{graphicx}
+\usepackage[caption=false,font=normalsize,labelfont=sf,textfont=sf]{subfig}
+\usepackage{capt-of}
+\usepackage{rotating}
+\usepackage{stfloats}
+\usepackage{placeins}
+
+% Algorithms
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+% Symbols and utilities
+\usepackage{textcomp}
+\usepackage{pifont}
+\usepackage{afterpage}
+\usepackage{balance}
+\usepackage{verbatim}
+\usepackage{xcolor}
+\usepackage{url}
+
+% Citations and references
+\usepackage{cite}
+
+% Hyperlinks
+\usepackage{hyperref}
+
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
+\hypersetup{
+    linktocpage=true,
+    pdfborderstyle={/S/S/W 1},
+    hyperindex=true,
+    bookmarks=false,
+    bookmarksopen=false,
+    bookmarksnumbered=false
+}
+
+% Paths for manuscript assets.
+\graphicspath{{Fig/}{Plot/}{Appendix/Fig/}}
+
+% Float placement tuning for dense two-column result tables.
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@fpsep}{10pt}
+\setlength{\@fpbot}{0pt plus 1fil}
+\setlength{\@dblfptop}{0pt}
+\setlength{\@dblfpsep}{12pt}
+\setlength{\@dblfpbot}{0pt plus 1fil}
+\makeatother
+\renewcommand{\topfraction}{0.95}
+\renewcommand{\bottomfraction}{0.90}
+\renewcommand{\textfraction}{0.05}
+\renewcommand{\floatpagefraction}{0.78}
+\renewcommand{\dbltopfraction}{0.95}
+\renewcommand{\dblfloatpagefraction}{0.78}
+\setlength{\textfloatsep}{12pt plus 2pt minus 2pt}
+\setlength{\dbltextfloatsep}{12pt plus 2pt minus 2pt}
+\setlength{\floatsep}{10pt plus 2pt minus 2pt}
+\setlength{\dblfloatsep}{10pt plus 2pt minus 2pt}
+
+% Hyphenation
+\hyphenation{op-tical net-works semi-conduc-tor IEEE-Xplore}
+
+% Compatibility fixes
+\let\Bbbk\relax
+
+\begin{document}
+
+\title{FUSEGuard: Source-Guarded Multi-Evidence Fusion for Generalizable AI-Generated Image Detection}
+
+\author{Anonymous Authors}
+
+\markboth{Manuscript under review}%
+{Anonymous Authors: FUSEGuard}
+
+\IEEEaftertitletext{%
+\vspace{0.3\baselineskip}
+\begin{center}
+\includegraphics[width=0.98\textwidth]{Fig/fig1_aigcdetectbenchmark_radar.png}
+\captionof{figure}{Comparison on AIGCDetectBenchmark. We conduct a 17-generator AI-generated image detection benchmark, including GAN, diffusion, and commercial generator families such as ProGAN, StyleGAN, BigGAN, CycleGAN, StarGAN, GauGAN, StyleGAN2, WhichFaceIsReal (WFIR), ADM, GLIDE, Midjourney, Stable Diffusion v1.4/v1.5, VQDM, Wukong, DALL-E 2, and SDXL. Representative classic and recent detectors \cite{wang2020cnnspot,zhong2023patchcraft,ojha2023univfd,tan2024npr,yan2025aide,liu2024fatformer,koutlis2024rine,tan2025c2pclip,cheng2025cospy} are presented in the benchmark, and their reported detection accuracies are visualized with radar charts. The concentric circles denote detection accuracy from 0\% to 100\%. FUSEGuard achieves the highest mean accuracy in this selected comparison, reaching 94.82\% and outperforming AIDE, a strong contemporary baseline, by 2.09 percentage points.}
+\label{fig:aigcdetectbenchmark_radar}
+\end{center}
+\vspace{0.2\baselineskip}
+}
+
+\maketitle
+
+\begin{abstract}
+AI-generated image detection is increasingly a deployment problem: a detector trained on one synthesis process must operate after shifts in generator, content, resolution, and post-processing. Existing cross-generator reports often emphasize benchmark accuracy, but checkpoint choice, score calibration, fusion constants, and operating thresholds can quietly turn target sets into validation sets. We study a stricter pixel-only setting in which component fitting, fusion selection, source-side calibration, score variants, and the final threshold are locked before target labels are inspected. We propose Source-Guarded Multi-Evidence Fusion (FUSEGuard), a source-only detector that combines explicit artifact statistics, native-resolution tile evidence, frozen-CLIP semantic evidence, and nearest-neighbor down-up residual traces in a clipped-logit fusion rule. Fusion constants are selected from source-gate scores under stress constraints, producing one fake score and a fixed $0.50$ decision rule for target inference. Across AIGCDetectBenchmark, UniversalFakeDetect, and GenImage, FUSEGuard shows strong cross-generator ranking and competitive fixed-threshold performance without target-label tuning. Ablations indicate that artifact evidence provides the fake-side anchor, while semantic, residual, and tile priors act as bounded corrections rather than stand-alone detectors. These results argue that AI-generated image detectors should be evaluated as locked operating rules, because high AP/AUC can still coexist with generator-dependent threshold errors.
+\end{abstract}
+
+\begin{IEEEkeywords}
+AI-generated image detection, deepfake detection, cross-generator generalization, source-only calibration, multi-prior fusion.
+\end{IEEEkeywords}
+
+\section{Introduction}
+\label{sec:introduction}
+\IEEEPARstart{A}{I}-generated image detection is now a moving-target problem. Image synthesis has progressed from adversarial generators to diffusion and text-conditioned systems that produce realistic faces, objects, scenes, and artwork under diverse generation and post-processing pipelines \cite{goodfellow2014gan,karras2019stylegan,ho2020ddpm,dhariwal2021diffusion,rombach2022ldm}. In many online settings, however, an image arrives without trusted provenance metadata, generator records, prompts, or watermarks. This paper therefore studies a pixel-only detection setting: given an RGB image, a detector must output both an image-level fake score and a fixed-threshold decision that can be deployed without knowing the target generator.
+
+The central challenge is not only fitting a source generator, but preserving a meaningful score after the synthesis process changes. Early cross-generator work showed that a ProGAN-trained classifier can transfer to several unseen CNN-based generators when training and preprocessing are carefully controlled \cite{wang2020cnnspot}. Later studies widened the setting to diffusion and commercial generators, vision-language features, million-scale benchmarks, visually challenging images, and real-world content or transmission shifts \cite{ojha2023univfd,zhu2023genimage,zhong2023patchcraft,yan2025aide,li2025rrdataset}. These benchmarks and analyses have made cross-generator generalization the core requirement for practical AI-generated image detection.
+
+Recent detectors increasingly approach this requirement by searching for transferable evidence rather than a single generator fingerprint. Spatial and texture methods model synthesis traces in RGB or local patches \cite{wang2020cnnspot,liu2020gramnet,zhong2023patchcraft}; frequency and photographic-statistics methods search for spectral, noise, or camera-related regularities \cite{frank2020frequency,liu2022realimages,karageorgiou2025spai,zhong2025beyond}; residual and reconstruction methods expose traces through gradients, upsampling relationships, diffusion reconstruction, or autoencoder reconstruction \cite{tan2023lgrad,tan2024npr,wang2023dire,ricker2024aeroblade}; and CLIP-based or hybrid detectors use pretrained semantic representations together with pixel-level cues \cite{radford2021clip,ojha2023univfd,cozzolino2024clip,yan2025aide,cheng2025cospy}. This literature suggests a consistent lesson: each cue family can transfer in some regimes, but each can also fail under generator, content, resolution, degradation, or calibration shift.
+
+The shift toward multi-cue detectors introduces a second problem that is less visible than representation design. Once a detector contains multiple components, reported performance depends on score normalization, fusion constants, checkpoint selection, score variants, and the operating threshold. Recent calibration work shows that detector decision boundaries can shift substantially under generator mismatch \cite{yang2026calibrated}. If target labels are used to choose the fusion rule, tune the threshold, select a checkpoint, or filter favorable generator subsets, a cross-generator benchmark becomes part of model selection rather than a report-only test. A deployable detector should therefore specify how the score is locked before target labels are inspected.
+
+Figure~\ref{fig:prior_evidence_map} illustrates the evidence motivation behind our design. Real and generated images can be visually plausible in RGB space, while residual, spectral, and fine-texture views expose different low-level responses. We do not use these views as manually thresholded maps. Instead, they motivate source-fitted component priors whose complementary evidence can be fused into a single locked image-level score.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{Fig/fig2_prior_evidence_map.png}
+\caption{Prior evidence maps for FUSEGuard. Each row shows an input image and three prior-derived evidence views: the absolute residual map after low-pass removal, the log-magnitude Fourier spectrum, and the spatial fine-texture energy map. The upper block contains real images, while the lower block contains generated images. These examples illustrate how residual, spectral, and local-texture responses can expose signals that are not obvious in RGB space, motivating their use as complementary evidence for AI-generated image detection.}
+\label{fig:prior_evidence_map}
+\end{figure}
+
+We propose FUSEGuard, a source-only multi-prior detector for cross-generator AI-generated image detection. FUSEGuard combines four complementary scores: a whole-image artifact prior from explicit low-level statistics, a native-tile artifact pathway for local high-resolution evidence, a semantic prior from frozen CLIP features with a source-fitted linear probe, and a residual prior based on nearest-neighbor down-up reconstruction traces. The components are fused in logit space using constants selected only from source-gate evidence, and the final decision threshold is fixed at $0.50$ before any target benchmark is evaluated. Target labels are reserved for report-only metrics.
+
+The design goal is an auditable detector rather than a target-adapted ensemble. Source data fit the component priors and select compact fusion constants. Target benchmarks are used only to measure the locked detector. We evaluate this setting on AIGCDetectBenchmark \cite{zhong2023patchcraft}, UniversalFakeDetect \cite{ojha2023univfd}, and GenImage \cite{zhu2023genimage}. Under the locked protocols, FUSEGuard reaches 94.82 Acc and 99.34 AP on AIGCDetectBenchmark, 89.39 Acc and 99.24 AP on UniversalFakeDetect, and 93.84 Acc and 98.50 AP on GenImage. We report ranking metrics with fixed-threshold accuracy and real/fake splits because high ranking quality can still coexist with asymmetric calibration errors. At the generator level, Figure~\ref{fig:aigcdetectbenchmark_radar} summarizes the AIGCDetectBenchmark comparison, where FUSEGuard obtains the highest mean Acc among representative classic and contemporary detectors across 17 generators.
+
+The paper makes the following contributions:
+\begin{itemize}
+    \item A stricter source-only prior-integration setting for cross-generator AI-generated image detection, in which component fitting, fusion selection, and fixed-threshold inference are locked before target labels are inspected. This setting turns cross-generator evaluation from target-adaptive model selection into a report-only deployment test.
+    \item FUSEGuard, an auditable single detector that unifies explicit artifact statistics, native-resolution tile evidence, frozen-CLIP semantic evidence, and nearest-neighbor residual traces. The tile pathway strengthens whole-image evidence only when local native-resolution evidence is stronger, while semantic and residual priors act as bounded corrections rather than unconstrained replacement detectors.
+    \item Source-stress-calibrated logit fusion, which selects compact fusion constants from source-gate evidence under source-side constraints and fixes the operating threshold at $0.50$. This score construction makes the detector's operating rule reproducible and explicitly separates calibration from target benchmark reporting.
+    \item Source-locked validation on AIGCDetectBenchmark, UniversalFakeDetect, and GenImage, covering GAN, diffusion, and commercial generators under ProGAN-source and Stable Diffusion v1.4-source protocols. Component ablations, real/fake splits, and ranking-versus-threshold diagnostics show where the priors complement each other and where fixed-threshold calibration remains the limiting factor.
+\end{itemize}
+
+The rest of the paper is organized as follows. Section~\ref{sec:related_work} reviews low-level, residual, semantic, and benchmark-oriented detection work. Section~\ref{sec:method} defines the source-only protocol and the FUSEGuard scoring pipeline. Section~\ref{sec:experiments} reports cross-benchmark results, robustness tests, ablations, and qualitative spatial-attribution analysis. Section~\ref{sec:discussion} discusses calibration behavior and limitations. The last section concludes the paper.
+
+\section{Related Work}
+\label{sec:related_work}
+
+AI-generated image detection has been approached through several evidence families, each making a different assumption about what should remain stable across generators. Spatial detectors rely on visual artifacts left by synthesis pipelines \cite{wang2020cnnspot,liu2020gramnet,zhong2023patchcraft}; frequency and photographic-statistics methods search for signal-level regularities \cite{frank2020frequency,liu2022realimages,zhong2025beyond}; residual and reconstruction methods use inverse or perturbation behavior as evidence \cite{tan2023lgrad,tan2024npr,wang2023dire}; and semantic or hybrid detectors exploit transferable representation spaces \cite{radford2021clip,ojha2023univfd,yan2025aide,cheng2025cospy}. We therefore group prior work into low-level forensic cues, residual and reconstruction cues, semantic and hybrid detectors, and evaluation protocols, emphasizing the evidence assumptions behind each line rather than benchmark ranking alone.
+
+\subsection{Low-Level Artifact and Forensic Cues}
+Early cross-generator studies showed that synthesis pipelines leave learnable spatial traces. CNNSpot demonstrated that a ProGAN-trained classifier can transfer to several unseen CNN-based generators when augmentation and preprocessing are carefully controlled \cite{wang2020cnnspot}. This protocol remains influential, but it also exposes a weakness of purely supervised artifact learning: the detector can inherit source-generator and source-data biases rather than a stable notion of photographic authenticity.
+
+Later spatial and texture-oriented detectors made the artifact hypothesis more structured. GramNet models global texture statistics for fake-face detection \cite{liu2020gramnet}, PatchCraft emphasizes local texture patches and rich/poor texture contrast \cite{zhong2023patchcraft}, and Fusing combines image-level and local evidence for generalized synthesized-image detection \cite{ju2022fusing}. FerretNet further exploits local-pixel dependency patterns for efficient synthetic-image detection \cite{liang2025ferretnet}. Other work targets the source-bias problem more directly through bias-free generation protocols or information-bottleneck objectives \cite{guillaro2025biasfree,zhang2025vibnet}. These studies motivate an artifact prior, but they also argue against treating a single artifact classifier as sufficient for open-generator detection.
+
+Frequency and photographic-statistics methods seek traces that are less semantic and potentially less tied to image content. FreDect showed that GAN images can contain distinctive spectral artifacts, partly associated with upsampling operations \cite{frank2020frequency}. FreqNet and later frequency-domain variants extend this idea with frequency-aware representation learning, dual-frequency cues, spectral learning, and bit-plane modeling \cite{tan2024freqnet,yan2025dffreq,karageorgiou2025spai,wang2025lota}. These methods are attractive because they move detection away from object-level shortcuts, but their signals can still be affected by compression, resizing, and post-processing.
+
+A complementary low-level strategy anchors the decision on real-image statistics. Detecting Generated Images by Real Images, often abbreviated as LNP in benchmark reports, models noise and frequency patterns of real images for cross-generator authentication \cite{liu2022realimages}, and its real-image-only extension moves toward one-class detection \cite{bi2023realonly}. Beyond Generation estimates a real-image feature distribution using diffusion-model features \cite{zhong2025beyond}, while ID-energy detection treats synthetic patterns as out-of-distribution samples relative to natural-image patterns \cite{cai2025generalizable}. SDAIE further uses camera metadata as a self-supervised signal and can be evaluated in one-class or binary-source settings \cite{zhong2026metadata}; related camera-pipeline work exploits demosaicing-guided color correlations \cite{zhong2026color}. These studies support our use of low-level priors, while highlighting that camera and frequency cues should be combined with other evidence rather than used as the only basis for a fixed threshold.
+
+\subsection{Gradient, Residual, and Reconstruction Cues}
+Residual and reconstruction methods use the behavior of auxiliary models or image operators to expose traces that may not be visible in RGB space. LGrad represents an image through gradients of a pretrained model, aiming to capture more general artifact evidence \cite{tan2023lgrad}. NPR revisits nearest-neighbor relationships induced by upsampling and models neighboring-pixel regularities shared across GAN and diffusion images \cite{tan2024npr}. These approaches are closely related to our residual prior, but our use is deliberately constrained: residual evidence is treated as a calibrated correction signal instead of a standalone detector.
+
+Reconstruction-based detectors are especially prominent for diffusion-generated images. DIRE uses diffusion reconstruction error as evidence of synthesis \cite{wang2023dire}; AEROBLADE uses autoencoder reconstruction error for training-free latent-diffusion detection \cite{ricker2024aeroblade}; LaRE\textsuperscript{2} moves reconstruction-error analysis into latent space \cite{luo2024lare2}; FakeInversion detects unseen text-to-image models through Stable Diffusion inversion \cite{cazenavette2024fakeinversion}; and FIRE introduces frequency-guided reconstruction error for robust diffusion-image detection \cite{chu2025fire}. Related zero-shot work exploits generative-model bias through model-agnostic training-free detection, score-function geometry, or denoising-trajectory differences \cite{he2024rigid,brokman2025manifold,liang2025trajectory}. These methods provide strong evidence, but their scores can depend on the chosen inverse process, autoencoder, or diffusion prior. This motivates combining residual or reconstruction cues with artifact and semantic evidence under a locked operating rule.
+
+\subsection{Semantic and Hybrid Detectors}
+Foundation models have shifted the field from detector-specific feature learning toward transferable representation spaces. CLIP provides large-scale vision-language features that transfer across visual tasks \cite{radford2021clip}. UnivFD showed that simple nearest-neighbor or linear-probe rules in a frozen vision-language feature space can generalize across generator families better than conventional real-vs-fake classifiers trained on one fake source \cite{ojha2023univfd}. Follow-up CLIP-based work found that few examples from one generator can provide strong out-of-distribution and robustness performance \cite{cozzolino2024clip}, while C2P-CLIP improves CLIP-based generalization by injecting category-common prompts \cite{tan2025c2pclip}. The strength of this paradigm is that the representation is not learned solely from one real/fake split; its limitation is that semantic transfer alone may miss low-level traces.
+
+Recent hybrid detectors therefore combine representation-level and low-level evidence. AIDE integrates CLIP-level semantics with patch-level features and shows that visually challenging generated images remain difficult for existing detectors \cite{yan2025aide}. FatFormer adapts CLIP features with image, frequency, and language-guided forgery cues \cite{liu2024fatformer}; CO-SPY combines semantic and pixel-level features \cite{cheng2025cospy}; D$^3$ learns discrepancy cues when scaling detector training across generators \cite{yang2025d3}; RINE leverages intermediate encoder-block representations \cite{koutlis2024rine}; EFFORT decomposes CLIP features into orthogonal subspaces for generalizable detection \cite{yan2024effort}; MCAN aggregates multiple cue experts \cite{tan2026mcan}; and SynerDetect aligns perceptual and generative forensic representations in a unified detection space \cite{li2026synerdetect}. This trend supports multi-evidence detection, but it also raises a protocol question: if multiple cues are fused, the fusion rule and operating threshold must be fixed without target-label feedback.
+
+\subsection{Benchmarks and Calibration Protocols}
+As generators diversify, evaluation protocol has become inseparable from detector design. GenImage provides a million-scale benchmark with cross-generator and degraded-image settings \cite{zhu2023genimage}, and DeepfakeBench emphasizes standardized pipelines for comparing deepfake detectors \cite{yan2023deepfakebench}. AIDE's Chameleon analysis and recent real-world robustness benchmarks show that detector behavior can change across visually challenging samples, scenario shift, degradation, and semantic diversity \cite{yan2025aide,li2025rrdataset}. Calibration is another protocol risk: threshold choice and score calibration can substantially change reported accuracy \cite{yang2026calibrated}. These studies indicate that high benchmark accuracy is not sufficient if the score, model variant, fusion constant, or decision threshold is selected using target information. Existing work has produced strong single-signal detectors, broad benchmarks, and increasingly capable hybrid models; however, when complementary cues are fused, the source-only locking protocol itself is often not the central object of study. We therefore study artifact, semantic, and residual priors under a locked fusion and threshold rule, reserving target labels only for reporting.
+
+\section{Method}
+\label{sec:method}
+
+\subsection{Detection Setting and Source-Only Protocol}
+\label{sec:problem_formulation}
+
+We begin by defining the detection setting and the source-only rule that constrains all later design choices.
+
+\textbf{Task definition.}
+We study binary detection of AI-generated images. Given an RGB image $x \in \mathcal{X}$, the label $y \in \{0,1\}$ indicates whether the image is real ($y=0$) or generated by an AI model ($y=1$). A detector produces a scalar fake score $f(x) \in [0,1]$, where larger values indicate stronger evidence that $x$ is generated. Unless stated otherwise, the final decision uses the fixed operating threshold $\hat{y}(x)=\mathbb{I}\left[f(x)\geq0.50\right]$. This fixed-threshold rule is part of the evaluated detector rather than a post-hoc choice made on a target benchmark.
+
+\textbf{Source and target domains.}
+Let $\mathcal{D}_{s}=\{(x_i^s,y_i^s)\}_{i=1}^{n_s}$ denote the source data available before deployment. In our implementation, the source data come from the ProGAN training split with balanced real and generated images. We separate source use into two auditable roles: source-fitted component training, denoted by $\mathcal{D}_{s}^{\mathrm{fit}}$ when a fit/gate split is explicitly materialized, and a recorded source-gate subset $\mathcal{D}_{s}^{\mathrm{gate}}$ used to select fusion constants from cached component scores. The recorded materialization uses seed 100 and assigns 80,000 source images to the fit role and 20,000 to the gate role, with 2,000 fit and 500 gate images for each class-label cell. The promoted runtime checkpoints are therefore described as source-fitted checkpoints, while the promoted fusion constants are source-gate selected. Let $\mathcal{D}_{t}^{g}=\{(x_i^{t,g},y_i^{t,g})\}_{i=1}^{n_g}$ denote a report-only target set associated with a generator or benchmark condition $g$. The target domain may differ from the source domain in generator architecture, image content, synthesis pipeline, resolution, and post-processing. The goal is therefore not in-domain source accuracy alone, but transfer of a locked detector from $\mathcal{D}_{s}$ to unseen target generators $\mathcal{G}_{t}$.
+
+\textbf{Source-only selection rule.}
+The central protocol constraint is that all detector choices must be made without target labels. Source labels may be used to fit detector priors, fit the CLIP linear probe, choose the residual checkpoint from source-side training records, and select fusion constants on $\mathcal{D}_{s}^{\mathrm{gate}}$. The operating threshold is fixed in advance at $0.50$ and is not tuned on target data. Target labels are used only after the detector is locked, to compute evaluation metrics. In particular, target labels must not determine prior training, epoch or checkpoint choice, fusion weights, score normalization, threshold selection, generator subset selection, or which score variant is reported. This rule treats target benchmarks as diagnostics of transfer rather than as validation sets for detector selection.
+
+\textbf{Evaluation setting and scope.}
+For each target generator or benchmark condition, we report ranking metrics such as average precision and area under the receiver operating characteristic curve, together with fixed-threshold metrics computed at $\tau=0.50$. This separation is important because a detector can rank real and generated images well while still requiring a different operating threshold under domain shift. We evaluate image-level binary authenticity from RGB pixels. The formulation does not assume access to generator internals, prompts, provenance metadata, watermarks, or camera metadata at test time, and it does not address localized manipulation, model attribution, or face presentation attack detection.
+
+\subsection{Overview}
+\label{sec:method_overview}
+
+FUSEGuard is a source-only multi-prior detector for cross-generator fake-image detection. Its design is driven by a simple deployment constraint: after the detector is locked on the source domain, target labels must not change its component priors, fusion constants, operating threshold, or reported score variant. We therefore organize the method as a two-stage pipeline, illustrated in Figure~\ref{fig:fuseguard_overview}, that separates source-side locking from target-side inference.
+
+In the locking stage, source-fitted artifact, semantic, and residual priors are evaluated on a recorded source-gate split to build a component-score cache. This cache is used only to select compact fusion constants under the fixed threshold $\tau=0.50$, producing the detector that will be deployed. In the inference stage, the locked detector maps each image to four scalar cues: whole-image artifact evidence, native-tile artifact evidence, CLIP semantic evidence, and nearest-neighbor residual evidence. These cues are combined in logit space with the locked constants, so target benchmarks serve only as report-time evaluations rather than validation sets.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{Fig/fuseguard_overview_placeholder.png}
+\caption{Overview of FUSEGuard. The upper branch shows source-only locking: source-fitted priors produce a source-gate component cache, from which compact fusion constants are selected under a fixed threshold. The lower branch shows locked inference: an input image is scored by whole-image artifact, native-tile artifact, semantic, and residual priors, then fused in logit space to produce the final fake score and fixed-threshold decision.}
+\label{fig:fuseguard_overview}
+\end{figure*}
+
+The remainder of this section follows the same pipeline: multi-prior scoring, source-only locking, component-prior construction, and the final locked inference rule. Table~\ref{tab:component_priors} summarizes the component-level implementation choices that are fixed before inference.
+
+\begin{table*}[t]
+\caption{Source-Fitted Priors and Locked Score Construction in FUSEGuard}
+\label{tab:component_priors}
+\centering
+\renewcommand{\arraystretch}{1.12}
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabularx}{\textwidth}{@{}p{0.10\textwidth}p{0.14\textwidth}X p{0.18\textwidth}p{0.16\textwidth}@{}}
+\toprule
+Score & Input view & Source-fitted model & Locked preprocessing & Output role \\
+\midrule
+$W(x)$ & Whole-image artifact views & 849-dimensional explicit artifact features with codec histogram-gradient boosting and chroma logistic experts; artifact payload coefficient $\alpha_A=-0.40$ & Bicubic $256\times256$ clean, JPEG quality 35 and 50, half-scale resize, and Gaussian blur radius 1 views & Whole-image low-level authenticity score aggregated by mean logit \\
+$T(x)$ & Native image tiles & Same clean artifact branch as $W(x)$ & $256\times256$ tiles from a $3\times3$ native grid, with edge padding for boundary crops and top-1 aggregation & Positive local artifact increment relative to $W(x)$ \\
+$S(x)$ & CLIP clean view & Frozen OpenAI CLIP ViT-L/14 image encoder with a source-fitted standardized balanced logistic-regression probe, $C=1.0$ & Clean $256\times256$ image view with L2-normalized CLIP features & Signed semantic evidence in logit space \\
+$R(x)$ & Nearest-neighbor residual tensor & ResNet-50 binary residual prior trained on source data with binary cross-entropy for two epochs; runtime loads checkpoint 1 & RGB conversion, even-size crop, tensor conversion, ImageNet normalization, and nearest-neighbor down-up residual & Low-weight residual correction with coefficient $\gamma$ \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\subsection{Source-Only Multi-Prior Scoring}
+\label{sec:method_scoring}
+
+Under the source-only protocol, the detector must convert heterogeneous cues into one deployable score without using target labels for calibration or model selection. FUSEGuard therefore uses a fixed multi-prior scoring pipeline. For an input image $x$, four source-fitted components produce scalar scores: a whole-image artifact score $W(x)$ from explicit low-level artifact features, a native-tile artifact score $T(x)$ from local high-resolution evidence, a semantic score $S(x)$ from a frozen CLIP image encoder with a source-fitted linear probe, and a residual score $R(x)$ from a nearest-neighbor down-up reconstruction residual branch. We use these quantities as bounded component scores and map them to clipped logits only inside the fusion rule. The source-gate stress constraints limit score drift and fixed-threshold flips after fusion, rather than claiming that the heterogeneous component probabilities are perfectly calibrated across domains. The resulting locked fake score is denoted by $f(x)$.
+
+The four scores are not treated as interchangeable ensemble members. The whole-image artifact prior anchors the decision with low-level authenticity evidence; the native-tile pathway contributes only when local artifact evidence is stronger than the whole-image estimate; the semantic prior supplies signed representation-level evidence from a pretrained vision-language feature space; and the residual prior adds a controlled correction for nearest-neighbor down-up reconstruction traces. This design keeps the detector interpretable at the component level while preserving the protocol constraint that all fusion choices are fixed before target evaluation.
+
+Algorithm~\ref{alg:source_locking} summarizes how the fusion constants are selected before target evaluation. The algorithm operates only on the source-gate cache and the fixed threshold. It does not inspect target scores, target labels, or per-generator target summaries.
+
+\begin{algorithm}[t]
+\caption{Source-only fusion calibration}
+\label{alg:source_locking}
+\begin{algorithmic}[1]
+\REQUIRE Source-gate component cache $\mathcal{C}_{s}^{\mathrm{gate}}$, anchor constants $\theta_0$, scale grid $\mathcal{G}$, source constraints $\Omega_s$, fixed threshold $\tau=0.50$
+\ENSURE Locked fusion constants $\theta^\star$ and threshold $\tau$
+\STATE Load $\mathcal{C}_{s}^{\mathrm{gate}}=\{(W_i,T_i,S_i,R_i,m_i,y_i)\}$ from source-gate component scores.
+\STATE $\mathcal{A}\leftarrow\emptyset$
+\FOR{each $(s_T,s_{S+},s_{S-},s_R)\in\mathcal{G}^4$}
+    \STATE $\theta\leftarrow\textsc{FoldScales}(\theta_0,s_T,s_{S+},s_{S-},s_R)$
+    \STATE $f_i(\theta)\leftarrow\textsc{Fuse}(W_i,T_i,S_i,R_i,m_i;\theta)$ for each gate sample.
+    \STATE Compute source ranking, threshold, drift, flip-rate, and source log-loss metrics.
+    \IF{all constraints in $\Omega_s$ are satisfied}
+        \STATE Add $\theta$ and its source metrics to $\mathcal{A}$.
+    \ENDIF
+\ENDFOR
+\STATE Select $\theta^\star\in\mathcal{A}$ with minimum fake-side source log loss, breaking ties by anchor distance, real-side log loss, source log loss, and variant identifier.
+\RETURN $\theta^\star,\tau$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Artifact Prior and Native-Tile Evidence}
+\label{sec:method_artifact}
+
+The artifact prior converts explicit low-level image statistics into an image-level fake score. For an input image, we first construct a $256 \times 256$ artifact view and extract a feature vector $\phi(x)$. The feature extractor includes statistics from RGB-light, residual, high-pass, local-DCT, and global-FFT views, together with rich spatial statistics, texture artifacts, recompression stability, residual co-occurrence and spectrum, residual-tail shape, chroma-luma coupling, patch-spectrum heterogeneity, and codec-block statistics. In the current implementation, $\phi(x)$ has 849 dimensions. Two source-fitted experts are trained from source labels: a codec expert $C(\cdot)$, implemented as a histogram gradient boosting classifier on codec-block features, and a chroma expert $Q(\cdot)$, implemented as a standardized logistic regression probe on fine chroma-luma coupling features. Both experts output fake probabilities. The artifact training record uses expanded source variants consisting of clean images, two JPEG-quality-50 copies, half-scale resize, and Gaussian blur radius 1, with no target labels.
+
+For a probability $p$, define the clipped logit $\ell(p)=\log(p/(1-p))$ and sigmoid $\sigma(z)=1/(1+\exp(-z))$, with probabilities clipped to $[10^{-6},1-10^{-6}]$ in implementation. For each artifact evaluation variant $v \in \mathcal{V}_{A}$, where $\mathcal{V}_{A}$ contains bicubic-resized clean, JPEG quality 35, JPEG quality 50, half-scale resized, and Gaussian-blurred $256 \times 256$ views, the artifact branch computes
+\[
+    A_v(x)=\sigma\left(\ell(C(\phi(v(x))))+\alpha_A \ell(Q(\phi(v(x))))\right),
+\]
+where $\alpha_A=-0.40$ is fixed in the artifact-prior payload. The whole-image artifact score is the mean-logit aggregation
+\[
+    W(x)=\sigma\left(\frac{1}{|\mathcal{V}_{A}|}\sum_{v\in\mathcal{V}_{A}}\ell(A_v(x))\right).
+\]
+This aggregation uses perturbation views to stabilize the low-level score against common compression and resizing changes. The artifact experts are fitted from the expanded source variants recorded in the training protocol and do not use target images or target labels.
+
+Whole-image resizing can dilute local high-resolution artifacts. FUSEGuard therefore computes a native-tile artifact score in parallel. If both image sides are no larger than the tile size, the tile branch uses one RGB crop covering the image and pads it by edge replication to $256 \times 256$ when necessary. Otherwise, the image is cropped into native-resolution $256 \times 256$ tiles from a $3 \times 3$ grid whose start positions include both image boundaries on each axis. Boundary tiles smaller than $256 \times 256$ are padded by edge replication before scoring. Each tile is scored by the clean artifact branch, and the image-level tile score is
+\[
+    T(x)=\max_{j} A_{\mathrm{clean}}(t_j),
+\]
+where $\{t_j\}$ are the extracted native tiles. Tile evidence enters the fused detector only as a positive logit increment over the whole-image score:
+\[
+    \Delta_T(x)=\max\left(0,\ell(T(x))-\ell(W(x))\right).
+\]
+This design lets a strong local artifact increase fake evidence while preventing low-scoring tiles from suppressing a reliable whole-image artifact score.
+
+\subsection{Semantic Prior}
+\label{sec:method_semantic}
+
+The semantic prior supplies representation-level evidence that is not learned from low-level artifact statistics alone. We use a frozen CLIP ViT-L/14 image encoder \cite{radford2021clip}. The CLIP encoder is not fine-tuned. Given an image $x$, the frozen encoder produces the image representation $z(x)=E_{\mathrm{CLIP}}(x)$. A source-only logistic regression probe $g_S$ is then fitted using CLIP features and source labels, producing the semantic fake score $S(x)=\sigma(g_S(z(x)))$. The probe uses L2-normalized CLIP features, a standardization layer, and a balanced logistic regression classifier with fixed regularization $C=1.0$ on the clean image view. The training script records source-side diagnostic metrics for the probe, but these diagnostics are not used to choose the CLIP backbone, regularization, score variant, fusion constants, or threshold. Target labels are not used to choose the CLIP backbone, the probe regularization, the score variant, or the final semantic contribution. In the fusion rule, $S(x)$ is treated as signed evidence: positive semantic logits support the fake class, while negative semantic logits support the real class. Separate coefficients are used for positive and negative semantic evidence because their calibration roles differ under domain shift.
+
+\subsection{Residual Prior}
+\label{sec:method_residual}
+
+The residual prior adds a correction signal based on nearest-neighbor down-up traces. This branch follows the observation that neighboring-pixel and upsampling residuals expose artifacts that may not be captured by RGB classifiers alone \cite{tan2024npr}. Let $\tilde{x}$ denote the residual-branch tensor after RGB conversion, even-size cropping, tensor conversion, and ImageNet normalization. During training, $\tilde{x}$ is resized to $256 \times 256$; in the locked inference configuration, the residual branch uses the native even-cropped resolution. Let $D_{\mathrm{nn}}$ and $U_{\mathrm{nn}}$ denote nearest-neighbor downsampling and upsampling by a factor of two. The residual input is
+\[
+    \rho(x)=\tilde{x}-U_{\mathrm{nn}}(D_{\mathrm{nn}}(\tilde{x})).
+\]
+A ResNet-50 binary classifier $g_R$ maps this residual tensor to a fake logit, producing the residual score $R(x)=\sigma(g_R(\rho(x)))$. The residual model is trained on source images for two epochs with binary cross-entropy, and the locked runtime configuration uses the epoch-1 checkpoint. This checkpoint choice is part of the source-side configuration record and is fixed before any target report is generated. In the final detector, the residual branch is not used as a standalone classifier. It enters only through the low-weight logit correction in Section~\ref{sec:method_fusion}, which limits the influence of residual scores that may vary with the reconstruction operator and preprocessing resolution.
+
+\subsection{Source-Only Fusion and Inference}
+\label{sec:method_fusion}
+
+FUSEGuard fuses the four prior scores in logit space. Let $m(x)$ indicate whether $x$ is high resolution, defined by maximum side length greater than 960 pixels, and let $\Delta_T(x)$ be the positive tile increment defined above. The semantic coefficient for positive evidence is
+\[
+    \alpha_{+}(x)=
+    \begin{cases}
+    \alpha_{\mathrm{high}+}, & m(x)=1,\\
+    \alpha_{\mathrm{low}+}, & m(x)=0,
+    \end{cases}
+\]
+and the semantic coefficient for negative evidence is
+\[
+    \alpha_{-}(x)=
+    \begin{cases}
+    \alpha_{\mathrm{high}-}, & m(x)=1 \ \mathrm{and}\ \Delta_T(x)>0,\\
+    \alpha_{\mathrm{high}-}^{\mathrm{guard}}, & m(x)=1 \ \mathrm{and}\ \Delta_T(x)\leq 0,\\
+    \alpha_{\mathrm{low}-}, & m(x)=0.
+    \end{cases}
+\]
+The semantic logit contribution is
+\[
+    \Psi_S(x)=\alpha_{+}(x)\max(0,\ell(S(x)))+
+    \alpha_{-}(x)\min(0,\ell(S(x))).
+\]
+The base score before residual correction is
+\[
+    B(x)=\sigma\left(\ell(W(x))+\beta \Delta_T(x)+\Psi_S(x)\right),
+\]
+and the final fake score is
+\[
+    f(x)=\sigma\left(\ell(B(x))+\gamma \ell(R(x))\right).
+\]
+
+\begin{algorithm}[!t]
+\caption{Locked multi-prior scoring}
+\label{alg:locked_inference}
+\begin{algorithmic}[1]
+\REQUIRE Image $x$, locked priors $\mathcal{P}$, locked constants $\theta^\star$, fixed threshold $\tau=0.50$
+\ENSURE Fake score $f(x)$ and binary decision $\hat{y}(x)$
+\STATE Compute whole-image artifact score $W(x)$ by mean-logit aggregation over $\mathcal{V}_A$.
+\STATE Extract native $256\times256$ tiles from $x$; use edge padding for boundary tiles when needed.
+\STATE Score each tile with the clean artifact branch and set $T(x)\leftarrow\max_j A_{\mathrm{clean}}(t_j)$.
+\STATE Compute semantic score $S(x)$ using frozen CLIP features and the source-fitted linear probe.
+\STATE Compute residual score $R(x)$ from nearest-neighbor down-up residuals.
+\STATE $\Delta_T(x)\leftarrow\max(0,\ell(T(x))-\ell(W(x)))$
+\STATE $m(x)\leftarrow\mathbb{I}[\max\mathrm{side}(x)>960]$
+\STATE Set $\alpha_+(x)$ from $m(x)$ and set $\alpha_-(x)$ using the high-resolution guard.
+\STATE $u_S\leftarrow\max(0,\ell(S(x)))$, \quad $v_S\leftarrow\min(0,\ell(S(x)))$
+\STATE $\Psi_S(x)\leftarrow\alpha_+(x)u_S+\alpha_-(x)v_S$
+\STATE $B(x)\leftarrow\sigma(\ell(W(x))+\beta\Delta_T(x)+\Psi_S(x))$
+\STATE $f(x)\leftarrow\sigma(\ell(B(x))+\gamma\ell(R(x)))$
+\STATE $\hat{y}(x)\leftarrow\mathbb{I}[f(x)\geq\tau]$
+\RETURN $f(x),\hat{y}(x)$
+\end{algorithmic}
+\end{algorithm}
+
+The fusion rule separates its functional form from its locked numerical instantiation. We select the constants once from source-gate component scores and source labels only, using the search in Algorithm~\ref{alg:source_locking}. The source-gate search uses the compact scale grid $\{0.75,1.00,1.25,1.50,1.75,2.00\}$ for the tile, positive semantic, negative semantic, and residual terms. A candidate is accepted only if it satisfies the source BA, AP, AUC, fixed-threshold flip-rate, mean-drift, and real-side log-loss constraints defined in the source-locking record. This search accepts 231 of 1,296 compact-scale candidates and selects the candidate with tile scale 1.25, positive semantic scale 2.00, negative semantic scale 1.25, and residual scale 1.75 relative to the source-gamma anchor. After folding these scales into the runtime configuration, the selected configuration uses $\beta=0.25$ for the tile increment and $\gamma=0.21$ for the residual correction. For semantic evidence, it uses $\alpha_{\mathrm{low}+}=0.30$ and $\alpha_{\mathrm{low}-}=0.1875$ on low-resolution images, and $\alpha_{\mathrm{high}+}=0.40$, $\alpha_{\mathrm{high}-}=0.00$, and $\alpha_{\mathrm{high}-}^{\mathrm{guard}}=0.25$ on high-resolution images. These values are fixed before any target report is generated.
+
+The final decision is $\hat{y}(x)=\mathbb{I}\left[f(x)\geq0.50\right]$, where the threshold is not tuned on target generators. Thus the target benchmarks evaluate a locked detector, rather than selecting fusion parameters, score variants, or an operating point. Algorithm~\ref{alg:locked_inference} summarizes the complete locked inference procedure for a test image.
+
+
+
+The procedure is an inference routine rather than a second calibration stage: Steps 1--5 compute the four evidence sources, Steps 6--10 form the gated tile and semantic contributions, and Steps 11--14 apply the locked logit fusion and threshold. No target-generator statistic, target-label summary, or benchmark-specific threshold enters this routine.
+
+% \FloatBarrier
+
+\section{Experiments}
+\label{sec:experiments}
+We evaluate FUSEGuard under two source protocols. The primary protocol follows the common ProGAN-to-unseen-generator setting: the detector is fitted and locked with ProGAN source data, then reported on AIGCDetectBenchmark \cite{zhong2023patchcraft} and UniversalFakeDetect. The second protocol follows the GenImage setting, where the source generator is Stable Diffusion v1.4 and the detector is evaluated across the GenImage validation generators. In both protocols, target labels are reserved for final reporting and are not used to select components, fusion constants, calibration parameters, or thresholds.
+
+\subsection{Experimental Setup}
+\label{sec:experimental_setup}
+
+\textbf{Datasets.}
+We evaluate cross-generator generalization on three public benchmarks. AIGCDetectBenchmark \cite{zhong2023patchcraft} follows the ProGAN-to-unseen-generator protocol and contains GAN, diffusion, and commercial-generator test subsets; its generator composition is summarized in Table~\ref{tab:aigcdetectbenchmark}. UniversalFakeDetect \cite{ojha2023univfd} is used as an additional ProGAN-source transfer benchmark with the same locked detector. GenImage \cite{zhu2023genimage} provides a Stable Diffusion v1.4-source protocol and evaluates transfer to eight generator families, covering both diffusion models and BigGAN.
+
+\begin{table}[t]
+\caption{Generator composition of AIGCDetectBenchmark. SD and WFIR denote Stable Diffusion and WhichFaceIsReal, respectively.}
+\label{tab:aigcdetectbenchmark}
+\centering
+\small
+\renewcommand{\arraystretch}{1.04}
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{@{}cccc@{}}
+\toprule
+\multirow{2}{*}{Generator} & Image & Image & Photographic \\
+ & Size & Number & Source \\
+\midrule
+ProGAN \cite{karras2018progan} & 256$\times$256 & 8.0k & LSUN \cite{yu2015lsun} \\
+StyleGAN \cite{karras2019stylegan} & 256$\times$256 & 12.0k & LSUN \\
+BigGAN \cite{brock2019biggan} & 256$\times$256 & 4.0k & ImageNet \cite{deng2009imagenet} \\
+CycleGAN \cite{zhu2017cyclegan} & 256$\times$256 & 2.6k & ImageNet \\
+StarGAN \cite{choi2018stargan} & 256$\times$256 & 4.0k & CelebA \cite{liu2015celeba} \\
+GauGAN \cite{park2019spade} & 256$\times$256 & 10.0k & COCO \cite{lin2014coco} \\
+StyleGAN2 \cite{karras2020stylegan2} & 256$\times$256 & 15.9k & LSUN \\
+WFIR \cite{whichfaceisreal2023} & 1024$\times$1024 & 2.0k & FFHQ \cite{karras2019stylegan} \\
+ADM \cite{dhariwal2021diffusion} & 256$\times$256 & 12.0k & ImageNet \\
+Glide \cite{nichol2022glide} & 256$\times$256 & 12.0k & ImageNet \\
+Midjourney \cite{midjourney2023} & 1024$\times$1024 & 12.0k & ImageNet \\
+SD v1.4 \cite{rombach2022ldm} & 512$\times$512 & 12.0k & ImageNet \\
+SD v1.5 \cite{rombach2022ldm} & 512$\times$512 & 16.0k & ImageNet \\
+VQDM \cite{gu2022vqdm} & 256$\times$256 & 12.0k & ImageNet \\
+WUKONG \cite{wukong2023} & 512$\times$512 & 12.0k & ImageNet \\
+DALL-E 2 \cite{ramesh2022dalle2} & 256$\times$256 & 2.0k & ImageNet \\
+SDXL \cite{podell2024sdxl} & 1024$\times$1024 & 4.0k & COCO \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Training and locking protocols.}
+For AIGCDetectBenchmark and UniversalFakeDetect, we follow the ProGAN-source setting but use a balanced 100k-image source subset, consisting of 50k real images and 50k ProGAN images. This source budget is smaller than the commonly used CNNSpot ProGAN training set for AIGCDetectBenchmark, which contains 360k LSUN real images and 360k ProGAN images \cite{wang2020cnnspot,zhong2023patchcraft}. All components are fitted from this source subset, and the fusion constants are locked on source-only evidence before target evaluation. The same locked detector is then evaluated on AIGCDetectBenchmark and UniversalFakeDetect. For GenImage, the components are fitted with the SD v1.4 source data and the operating score is calibrated using only source-calibration images. In all protocols, target labels are used only for final reporting; they are never used to choose a component variant, fusion constant, calibration bias, or decision threshold.
+
+\textbf{Implementation details.}
+All reports use the FUSEGuard scoring pipeline described in Section~\ref{sec:method}: whole-image artifact scoring, native-tile artifact scoring, frozen-CLIP semantic scoring, and nearest-neighbor residual scoring followed by locked logit fusion. The ProGAN-source reports use the folded constants in Section~\ref{sec:method_fusion} and the fixed threshold $\tau=0.50$. The GenImage report uses the same fusion form with source-only calibration from the SD v1.4 source data before applying the same threshold.
+
+\textbf{Metrics.}
+Following common reports on AIGCDetectBenchmark, UniversalFakeDetect, and GenImage, we use classification accuracy (Acc) and average precision (AP) as the primary comparable metrics \cite{ojha2023univfd,zhong2023patchcraft,zhu2023genimage,yan2025aide}. We additionally report the area under the ROC curve (AUC) and the real/fake accuracy split. Acc, Real, and Fake are threshold metrics computed at $\tau=0.50$ after the source-side locking or calibration step, whereas AP and AUC are threshold-free ranking metrics. AUC complements AP by summarizing ROC ordering across operating points, and the Real/Fake split exposes asymmetric calibration errors that can be hidden by mean Acc. These added diagnostics are reported after locking and are not used for model selection.
+
+\subsection{Benchmark-Level Reports}
+\label{sec:benchmark_reports}
+
+\begin{table}[t]
+\caption{Cross-Benchmark Evaluation Under Locked Source Protocols. AIGCDetect denotes AIGCDetectBenchmark, and UFD denotes UniversalFakeDetect. Acc, AP, AUC, Real, and Fake are averaged over target generators within each benchmark.}
+\label{tab:benchmark_summary}
+\centering
+\small
+\renewcommand{\arraystretch}{1.08}
+\setlength{\tabcolsep}{2.4pt}
+\begin{tabular}{@{}lcrrrrr@{}}
+\toprule
+Benchmark & Source & Target & Mean & Mean & Mean & Mean \\
+ & protocol & generators & Acc & AP & AUC & Real/Fake \\
+\midrule
+AIGCDetect & ProGAN & 17 & 94.82 & 99.34 & 99.30 & 94.69/94.95 \\
+UFD & ProGAN & 21 & 89.39 & 99.24 & 99.19 & 83.36/95.41 \\
+GenImage & SD v1.4 & 8 & 93.84 & 98.50 & 98.56 & 94.91/92.76 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:benchmark_summary} gives the compact report across the three evaluated benchmarks, with metrics averaged over target generators. On AIGCDetectBenchmark, the locked ProGAN-source detector attains 94.82 Acc and 99.34 AP across 17 generators. On UniversalFakeDetect, the same ProGAN-source detector keeps high ranking quality but shows a lower real-side fixed-threshold accuracy, which lowers mean Acc despite 99.24 AP. On GenImage, the Stable Diffusion v1.4-source protocol gives 93.84 Acc and 98.50 AP across eight generator families.
+
+These results motivate two reporting choices. First, AP and AUC are not sufficient for this detector, because the fixed decision threshold exposes benchmark-specific shifts. Second, the source protocol must be stated with each benchmark. AIGCDetectBenchmark and UniversalFakeDetect evaluate the same ProGAN-source locked detector, whereas GenImage evaluates the same FUSEGuard design with a GenImage SD v1.4 source and source-only probability calibration.
+
+\subsection{Cross-Generator Behavior}
+\label{sec:cross_generator_behavior}
+
+Table~\ref{tab:aigcdetect_comparison} reports generator-level transfer on AIGCDetectBenchmark \cite{zhong2023patchcraft}. The main text uses Acc because recent AIGCDetectBenchmark reports provide complete 17-generator Acc more consistently than per-generator AP. The full AP counterpart is provided after the references in the reproducibility checklist (Table~\ref{tab:aigcdetect_ap_comparison}) using the same layout. The best and second-best reported values in each column are marked in bold and underlined, respectively.
+
+\begin{table*}[!t]
+\caption{Comparison on AIGCDetectBenchmark. Each entry reports Acc (\%) for detecting real and fake images from the generator named in the column. DIRE-G denotes the ProGAN-source DIRE variant, whereas DIRE-D follows the ADM-source DIRE setup; SDAIE is the one-class variant, whereas SDAIE$^\dagger$ is the binary ProGAN-source variant. The best and second-best values in each column are marked in bold and underline, respectively.}
+\label{tab:aigcdetect_comparison}
+\centering
+\small
+\providecommand{\rotgen}[1]{\makebox[0pt][l]{\rotatebox{60}{\textit{#1}}}}
+\renewcommand{\arraystretch}{1.03}
+\setlength{\tabcolsep}{0.6pt}
+\begin{tabularx}{\textwidth}{@{}l>{\centering\arraybackslash}p{0.095\textwidth}*{18}{Y}@{}}
+\toprule
+Method & Ref. & \rotgen{ProGAN} & \rotgen{StyleGAN} & \rotgen{BigGAN} & \rotgen{CycleGAN} & \rotgen{StarGAN} & \rotgen{GauGAN} & \rotgen{StyleGAN2} & \rotgen{WFIR} & \rotgen{ADM} & \rotgen{GLIDE} & \rotgen{Midjourney} & \rotgen{SD v1.4} & \rotgen{SD v1.5} & \rotgen{VQDM} & \rotgen{Wukong} & \rotgen{DALL-E 2} & \rotgen{SDXL} & \rotgen{Mean} \\
+\midrule
+CNNSpot & CVPR 2020 & \textbf{100.0} & 90.2 & 71.2 & 87.6 & 94.6 & 81.4 & 86.9 & 91.7 & 60.4 & 58.1 & 51.4 & 50.6 & 50.5 & 56.5 & 51.0 & 50.5 & 53.0 & 69.73 \\
+FreDect & ICML 2020 & 99.4 & 78.0 & 82.0 & 78.8 & 94.6 & 80.6 & 66.2 & 50.8 & 63.4 & 54.1 & 45.9 & 38.8 & 39.2 & 77.8 & 40.3 & 34.7 & 51.2 & 63.28 \\
+Fusing & ICIP 2022 & \textbf{100.0} & 85.2 & 77.4 & 87.0 & 97.0 & 77.0 & 83.3 & 66.8 & 49.0 & 57.2 & 52.2 & 51.0 & 51.4 & 55.1 & 51.7 & 52.8 & 55.6 & 67.63 \\
+GramNet & CVPR 2020 & \textbf{100.0} & 87.1 & 67.3 & 86.1 & 95.1 & 69.4 & 87.3 & 86.8 & 58.6 & 54.5 & 50.0 & 51.7 & 52.2 & 52.9 & 50.8 & 49.3 & 64.5 & 68.43 \\
+LNP & ECCV 2022 & \textbf{100.0} & 92.6 & 88.4 & 79.1 & \textbf{100.0} & 79.2 & 93.8 & 50.0 & 83.9 & 83.5 & 69.6 & 89.3 & 88.8 & 85.0 & 86.4 & 92.5 & 87.8 & 85.28 \\
+LGrad & CVPR 2023 & 99.8 & 91.1 & 85.6 & 86.9 & 99.3 & 78.5 & 85.3 & 55.7 & 67.2 & 66.1 & 65.4 & 63.0 & 63.7 & 73.0 & 59.6 & 65.5 & 71.3 & 75.11 \\
+DIRE-G & ICCV 2023 & 95.2 & 83.0 & 70.1 & 74.2 & 95.5 & 67.8 & 75.3 & 58.1 & 75.8 & 71.8 & 58.0 & 49.7 & 49.8 & 53.7 & 54.5 & 66.5 & 55.4 & 67.90 \\
+DIRE-D & ICCV 2023 & 52.8 & 51.3 & 49.7 & 49.6 & 46.7 & 51.2 & 51.7 & 53.3 & \textbf{98.3} & 92.4 & 89.5 & 91.2 & 91.6 & 91.9 & 90.9 & 92.5 & 91.3 & 72.70 \\
+UnivFD & CVPR 2023 & 99.8 & 84.9 & 95.1 & 98.3 & 95.8 & \underline{99.5} & 75.0 & 86.9 & 66.9 & 62.5 & 56.1 & 63.7 & 63.5 & 85.3 & 70.9 & 50.8 & 50.7 & 76.80 \\
+PatchCraft & arXiv 2023 & \textbf{100.0} & 92.8 & 95.8 & 70.2 & \textbf{100.0} & 71.6 & 89.6 & 85.8 & 82.2 & 83.8 & 90.1 & \underline{95.4} & \underline{95.3} & 88.9 & 91.1 & 96.6 & \textbf{98.4} & 89.85 \\
+NPR & CVPR 2024 & 99.8 & 97.7 & 84.4 & 96.1 & 99.4 & 82.5 & 98.4 & 65.8 & 69.7 & 78.4 & 77.9 & 78.6 & 78.9 & 78.1 & 76.1 & 64.9 & 81.3 & 82.81 \\
+AIDE & ICLR 2025 & \textbf{100.0} & \underline{99.6} & 84.0 & 98.5 & \underline{99.9} & 73.3 & 98.0 & \underline{94.2} & 93.4 & \underline{95.1} & 77.2 & 93.0 & 92.9 & \textbf{95.2} & \underline{93.6} & 96.6 & 92.2 & 92.73 \\
+SDAIE & TPAMI 2026 & 78.6 & 84.8 & 57.9 & 66.2 & 74.5 & 55.3 & 85.0 & 71.5 & 88.9 & 93.2 & 85.6 & 89.7 & 89.7 & 90.8 & 87.5 & 89.0 & 89.4 & 81.02 \\
+SDAIE$^\dagger$ & TPAMI 2026 & \textbf{100.0} & \textbf{99.8} & 90.5 & 91.9 & \textbf{100.0} & 84.0 & \textbf{99.2} & 84.5 & 92.9 & 93.1 & \underline{95.4} & \textbf{95.8} & \textbf{95.7} & 91.5 & \textbf{95.0} & \underline{97.1} & \underline{96.6} & \underline{94.30} \\
+FatFormer & CVPR 2024 & \underline{99.9} & 98.4 & 99.5 & \textbf{99.8} & 99.1 & 98.4 & 97.5 & 87.2 & 85.7 & 90.9 & 71.0 & 68.7 & 68.0 & 85.5 & 82.3 & 74.2 & 70.5 & 86.86 \\
+RINE & ECCV 2024 & \textbf{100.0} & 97.7 & \underline{99.6} & \underline{99.3} & 99.6 & \textbf{99.8} & 96.9 & \textbf{98.5} & 71.9 & 81.7 & 66.0 & 81.4 & 81.9 & 87.1 & 82.3 & 56.9 & 74.7 & 86.78 \\
+C2P-CLIP & AAAI 2025 & \textbf{100.0} & 98.6 & \textbf{99.9} & 98.4 & 98.0 & 98.7 & 97.1 & 92.3 & 70.9 & 86.8 & 62.2 & 80.5 & 80.3 & 86.5 & 79.4 & 67.1 & 69.6 & 86.25 \\
+D$^3$ & CVPR 2025 & \underline{99.9} & 90.8 & 97.8 & 98.3 & 97.6 & \textbf{99.8} & 88.9 & 84.9 & 77.4 & 74.2 & 70.4 & 73.7 & 73.8 & 89.7 & 72.3 & 70.1 & 71.1 & 84.17 \\
+FIRE & CVPR 2025 & 96.9 & 87.3 & 83.4 & 86.1 & 95.1 & 79.6 & 85.2 & 85.4 & 85.7 & 84.4 & 77.9 & 85.2 & 85.2 & 79.8 & 84.8 & 83.5 & 77.6 & 84.88 \\
+CO-SPY & CVPR 2025 & \underline{99.9} & 96.3 & 92.0 & 98.0 & 96.1 & 90.9 & 97.9 & 71.7 & 73.3 & 88.8 & 88.7 & 86.0 & 86.4 & 82.4 & 78.8 & 77.1 & 87.5 & 87.73 \\
+\midrule
+\rowcolor[gray]{0.88}
+Ours & -- & \textbf{100.0} & 99.4 & 89.3 & 96.6 & \underline{99.9} & 82.8 & \underline{98.9} & 90.2 & \underline{96.3} & \textbf{98.4} & \textbf{97.2} & 92.6 & 92.9 & \underline{93.4} & 87.6 & \textbf{98.2} & \textbf{98.4} & \textbf{94.82} \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+In Table~\ref{tab:aigcdetect_comparison}, Ours reports the highest mean accuracy among the listed entries under the table's reporting convention while using the locked ProGAN-source protocol described above. Table~\ref{tab:aigcdetect_ap_comparison} complements this result by separating threshold-free ranking quality from fixed-threshold behavior: several methods retain high AP on individual generators even when Acc drops, confirming that both metrics are needed for cross-generator reporting.
+
+\begin{table*}[!t]
+\caption{Comparison on GenImage. Each entry reports Acc (\%) for detecting real and fake images from the generator named in the column. The best and second-best values in each column are marked in bold and underline, respectively.}
+\label{tab:genimage_report}
+\centering
+\small
+\renewcommand{\arraystretch}{1.0}
+\setlength{\tabcolsep}{2pt}
+\begin{tabularx}{\textwidth}{@{}l>{\centering\arraybackslash}p{0.105\textwidth}*{9}{>{\centering\arraybackslash}X}@{}}
+\toprule
+Method & Ref. & BigGAN & Midjourney & SD v1.4 & SD v1.5 & ADM & GLIDE & Wukong & VQDM & Mean \\
+\midrule
+LGrad & CVPR 2023 & 40.69 & 73.74 & 76.28 & 77.12 & 51.96 & 49.92 & 73.18 & 52.83 & 61.97 \\
+DIRE & ICCV 2023 & 50.66 & 77.43 & 94.42 & 94.13 & 72.08 & 71.23 & 93.99 & 55.83 & 76.22 \\
+UnivFD & CVPR 2023 & 81.21 & 72.68 & 85.47 & 85.11 & 55.34 & 77.43 & 76.48 & 57.24 & 73.87 \\
+NPR & CVPR 2024 & 81.84 & \underline{89.84} & 90.74 & 90.74 & \underline{84.63} & 90.31 & 90.67 & 87.04 & 88.23 \\
+FreqNet & AAAI 2024 & 90.58 & 69.72 & 64.27 & 64.84 & 83.31 & 81.68 & 57.79 & 81.76 & 74.24 \\
+FatFormer & CVPR 2024 & \textbf{96.67} & 56.06 & 67.66 & 68.09 & 78.33 & 87.92 & 72.92 & 86.85 & 76.81 \\
+LaRE\textsuperscript{2} & CVPR 2024 & 80.47 & 69.85 & 98.24 & 97.93 & 71.73 & 80.26 & \underline{98.89} & 87.48 & 85.61 \\
+AIDE & ICLR 2025 & 66.83 & 79.38 & 99.75 & \underline{99.75} & 78.49 & 91.77 & 98.85 & 80.24 & 86.88 \\
+FerretNet & NeurIPS 2025 & \underline{91.32} & 78.00 & \textbf{100.00} & \textbf{99.80} & 76.48 & \textbf{98.56} & \textbf{99.58} & 81.62 & 90.67 \\
+EFFORT & ICML 2025 & 77.60 & 82.40 & \underline{99.80} & \textbf{99.80} & 78.70 & 93.30 & 97.40 & \underline{91.70} & \underline{91.10} \\
+\midrule
+\rowcolor[gray]{0.88}
+Ours & -- & 78.20 & \textbf{95.43} & 97.77 & 97.46 & \textbf{90.65} & \underline{97.20} & 97.53 & \textbf{96.45} & \textbf{93.84} \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\begin{table*}[!t]
+\caption{Comparison on UniversalFakeDetect. Each entry reports Acc/AP (\%) for detecting real and fake images from the generator/source named in the row. Mean averages the shared subsets. The best and second-best Acc/AP values in each generator row are marked in bold and underline, respectively.}
+\label{tab:ufd_report}
+\centering
+\small
+\providecommand{\pair}[2]{\mbox{#1\kern-.35pt/\kern-.35pt#2}}
+\renewcommand{\arraystretch}{1.03}
+\setlength{\tabcolsep}{0pt}
+\begin{tabularx}{\textwidth}{@{}l*{9}{>{\centering\arraybackslash}X}@{}}
+\toprule
+Generator & CNNSpot & LGrad & NPR & UnivFD & FreqNet & FatFormer & RINE & C2P-CLIP & Ours \\
+Ref. & CVPR 2020 & CVPR 2023 & CVPR 2024 & CVPR 2023 & AAAI 2024 & CVPR 2024 & ECCV 2024 & AAAI 2025 & -- \\
+\midrule
+ProGAN & \pair{\underline{99.99}}{\textbf{100.00}} & \pair{99.84}{\textbf{100.00}} & \pair{99.84}{\textbf{100.00}} & \pair{\textbf{100.00}}{\textbf{100.00}} & \pair{97.90}{\underline{99.92}} & \pair{99.89}{\textbf{100.00}} & \pair{\textbf{100.00}}{\textbf{100.00}} & \pair{99.98}{\textbf{100.00}} & \pair{\underline{99.99}}{\textbf{100.00}} \\
+CycleGAN & \pair{85.20}{93.47} & \pair{85.39}{93.98} & \pair{95.00}{99.53} & \pair{98.50}{98.13} & \pair{95.84}{99.63} & \pair{\textbf{99.32}}{\textbf{100.00}} & \pair{\underline{99.30}}{\textbf{100.00}} & \pair{97.31}{\textbf{100.00}} & \pair{96.59}{\underline{99.83}} \\
+BigGAN & \pair{70.20}{84.50} & \pair{82.88}{90.69} & \pair{87.55}{94.53} & \pair{94.50}{94.46} & \pair{90.45}{96.05} & \pair{\underline{99.50}}{\textbf{99.98}} & \pair{\textbf{99.60}}{99.90} & \pair{99.12}{\underline{99.96}} & \pair{89.33}{99.27} \\
+StyleGAN & \pair{85.70}{99.54} & \pair{94.83}{99.86} & \pair{96.23}{\underline{99.94}} & \pair{82.00}{86.66} & \pair{\underline{97.55}}{99.89} & \pair{97.15}{99.75} & \pair{88.90}{99.40} & \pair{96.44}{99.50} & \pair{\textbf{99.34}}{\textbf{100.00}} \\
+GauGAN & \pair{78.95}{89.49} & \pair{72.45}{79.36} & \pair{86.57}{88.82} & \pair{\underline{99.50}}{99.25} & \pair{90.24}{\underline{99.71}} & \pair{99.41}{\textbf{100.00}} & \pair{\textbf{99.80}}{\textbf{100.00}} & \pair{99.17}{\textbf{100.00}} & \pair{82.84}{99.51} \\
+StarGAN & \pair{91.70}{98.15} & \pair{99.62}{\underline{99.98}} & \pair{\underline{99.75}}{\textbf{100.00}} & \pair{97.00}{99.53} & \pair{93.41}{98.63} & \pair{\underline{99.75}}{\textbf{100.00}} & \pair{99.50}{\textbf{100.00}} & \pair{99.60}{\textbf{100.00}} & \pair{\textbf{99.87}}{\textbf{100.00}} \\
+Deepfake & \pair{53.47}{89.02} & \pair{58.00}{67.91} & \pair{76.89}{84.41} & \pair{66.60}{91.67} & \pair{\textbf{97.40}}{\textbf{99.92}} & \pair{93.23}{97.99} & \pair{80.60}{97.90} & \pair{\underline{93.77}}{\underline{98.59}} & \pair{80.35}{94.85} \\
+SITD & \pair{66.67}{73.75} & \pair{62.50}{59.42} & \pair{66.94}{97.95} & \pair{63.00}{78.54} & \pair{88.92}{94.42} & \pair{81.11}{97.94} & \pair{\underline{90.60}}{97.20} & \pair{\textbf{95.56}}{\underline{98.92}} & \pair{69.44}{\textbf{99.19}} \\
+SAN & \pair{48.69}{59.47} & \pair{50.00}{51.42} & \pair{\textbf{98.63}}{\textbf{99.99}} & \pair{57.50}{67.54} & \pair{59.04}{74.59} & \pair{68.04}{81.21} & \pair{68.30}{94.90} & \pair{64.38}{84.56} & \pair{\underline{92.24}}{\underline{97.51}} \\
+CRN & \pair{86.31}{98.24} & \pair{50.74}{63.52} & \pair{50.00}{50.16} & \pair{59.50}{83.12} & \pair{71.92}{80.10} & \pair{69.45}{\underline{99.84}} & \pair{\underline{89.20}}{97.30} & \pair{\textbf{93.29}}{\textbf{99.86}} & \pair{50.02}{99.05} \\
+IMLE & \pair{86.26}{98.40} & \pair{50.78}{69.61} & \pair{50.00}{50.16} & \pair{72.00}{91.06} & \pair{67.35}{75.70} & \pair{69.45}{\underline{99.93}} & \pair{\underline{90.60}}{99.70} & \pair{\textbf{93.29}}{\textbf{99.95}} & \pair{50.02}{99.90} \\
+Guided & \pair{60.07}{73.72} & \pair{77.50}{87.06} & \pair{84.55}{\underline{98.26}} & \pair{70.03}{79.24} & \pair{\underline{86.70}}{96.27} & \pair{76.00}{91.99} & \pair{76.10}{96.40} & \pair{69.10}{94.13} & \pair{\textbf{90.05}}{\textbf{98.29}} \\
+LDM200 & \pair{54.03}{70.62} & \pair{94.20}{99.03} & \pair{97.65}{99.92} & \pair{94.19}{95.81} & \pair{84.55}{96.06} & \pair{98.60}{99.81} & \pair{98.30}{99.80} & \pair{\underline{99.25}}{\textbf{99.99}} & \pair{\textbf{99.30}}{\underline{99.98}} \\
+LDM200-CFG & \pair{54.96}{71.00} & \pair{95.85}{99.16} & \pair{\underline{98.00}}{\underline{99.91}} & \pair{73.76}{79.77} & \pair{\textbf{99.58}}{\textbf{100.00}} & \pair{94.90}{99.09} & \pair{88.20}{98.30} & \pair{97.25}{99.83} & \pair{97.30}{99.86} \\
+LDM100 & \pair{54.14}{70.54} & \pair{94.80}{99.18} & \pair{98.20}{99.92} & \pair{94.36}{95.93} & \pair{65.56}{62.34} & \pair{98.65}{99.87} & \pair{98.60}{99.90} & \pair{\underline{99.30}}{\underline{99.98}} & \pair{\textbf{99.45}}{\textbf{99.99}} \\
+GLIDE100-27 & \pair{60.78}{80.65} & \pair{87.40}{93.23} & \pair{\underline{96.25}}{\underline{99.87}} & \pair{79.07}{93.93} & \pair{85.69}{99.80} & \pair{94.35}{99.13} & \pair{88.90}{98.80} & \pair{95.25}{99.72} & \pair{\textbf{99.45}}{\textbf{99.96}} \\
+GLIDE100-10 & \pair{63.80}{84.91} & \pair{90.70}{95.10} & \pair{97.15}{\underline{99.89}} & \pair{79.85}{95.12} & \pair{\underline{97.40}}{99.78} & \pair{94.65}{99.41} & \pair{92.60}{99.30} & \pair{95.25}{99.79} & \pair{\textbf{99.15}}{\textbf{99.90}} \\
+GLIDE50-27 & \pair{65.66}{82.07} & \pair{89.55}{94.93} & \pair{\underline{97.35}}{\underline{99.92}} & \pair{78.14}{94.59} & \pair{88.15}{96.39} & \pair{94.20}{99.20} & \pair{90.70}{98.90} & \pair{96.10}{99.83} & \pair{\textbf{99.35}}{\textbf{99.95}} \\
+DALL-E & \pair{55.58}{70.59} & \pair{88.35}{97.23} & \pair{87.15}{99.26} & \pair{86.78}{88.45} & \pair{59.06}{77.78} & \pair{\textbf{98.75}}{\underline{99.82}} & \pair{95.00}{99.30} & \pair{\underline{98.55}}{\textbf{99.91}} & \pair{93.95}{99.61} \\
+\midrule
+\rowcolor[gray]{0.88}
+Mean & \pair{69.58}{83.58} & \pair{80.28}{86.35} & \pair{87.56}{92.76} & \pair{81.38}{90.14} & \pair{85.09}{91.95} & \pair{90.86}{98.16} & \pair{\underline{91.31}}{\underline{98.78}} & \pair{\textbf{93.79}}{98.66} & \pair{88.84}{\textbf{99.30}} \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{Fig/fig4_generator_embedding_scatter.png}
+\caption{Generator-wise embedding visualization of FUSEGuard evidence features. Each panel shows a two-dimensional t-SNE projection of the high-dimensional evidence embedding for one generator family. Red points denote real images and blue points denote generated images, with balanced samples used for each class. The repeated local separation across GAN-based, diffusion-based, and commercial generators suggests that the prior-fusion evidence space captures transferable cues while retaining generator-specific distribution patterns. Coordinates are fitted independently per generator and should be interpreted as local separability rather than a shared global axis.}
+\label{fig:generator_embedding_scatter}
+\end{figure*}
+
+% \clearpage
+
+Tables~\ref{tab:genimage_report} and \ref{tab:ufd_report} expand the external benchmark results to generator-level comparisons. In the main text, the GenImage table reports Acc, while the corresponding AP values are provided in Table~\ref{tab:genimage_ap_comparison}. On GenImage, Ours gives the highest mean Acc among the retained baselines with complete per-generator reporting, while BigGAN remains the main fixed-threshold weakness under the Stable Diffusion v1.4-source calibration. On UniversalFakeDetect, Ours keeps the highest mean AP among the listed methods on the shared 19-subset comparison, but its fixed-threshold mean Acc is lower than C2P-CLIP, RINE, and FatFormer. The gap is driven mainly by real-side false positives under the locked $0.50$ threshold rather than by a loss of ranking quality. This again separates ranking quality from the deployed threshold and is consistent with the 21-generator summary in Table~\ref{tab:benchmark_summary}, where UniversalFakeDetect includes StyleGAN2 and WhichFaceIsReal in addition to the shared table rows.
+
+The visualization in Figure~\ref{fig:generator_embedding_scatter} provides a complementary view of the evidence space behind these generator-level results. Across GAN, diffusion, and commercial-generator subsets, real and generated samples often form separable local structures, while the degree of overlap varies by generator. This supports the table-level observation that the fused score captures transferable evidence but still faces generator-dependent calibration and threshold shifts. Because each t-SNE projection is fitted separately, axes are local to each generator panel.
+
+% \FloatBarrier
+
+\subsection{Input Perturbation Robustness}
+\label{sec:input_perturbation_robustness}
+
+\begin{table}[t]
+\caption{Robustness under JPEG compression and Gaussian blur on AIGCDetectBenchmark. Entries report mean Acc (\%); best and second-best values are marked in bold and underline, respectively.}
+\label{tab:robustness_aide_style}
+\centering
+\footnotesize
+\renewcommand{\arraystretch}{1.03}
+\setlength{\tabcolsep}{1.15pt}
+\begin{tabularx}{\columnwidth}{@{}l*{8}{>{\centering\arraybackslash}X}@{}}
+\toprule
+Method & \multicolumn{4}{c}{JPEG Compression} & \multicolumn{4}{c}{Gaussian Blur} \\
+\cmidrule(lr){2-5}\cmidrule(l){6-9}
+ & QF=95 & QF=90 & QF=75 & QF=50 & $\sigma{=}1$ & $\sigma{=}2$ & $\sigma{=}3$ & $\sigma{=}4$ \\
+\midrule
+CNNSpot & 64.03 & 62.26 & 60.65 & 59.66 & 68.39 & 67.26 & 67.13 & 65.85 \\
+FreDect & 66.95 & 67.45 & 66.64 & 65.33 & 65.75 & 66.48 & 68.58 & 69.64 \\
+Fusing & 62.43 & 61.39 & 59.34 & 57.41 & 68.09 & 66.69 & 66.02 & 65.58 \\
+LNP & 53.58 & 54.09 & 53.02 & 52.85 & 67.91 & 66.42 & 66.20 & 62.69 \\
+LGrad & 51.55 & 51.39 & 50.00 & 50.00 & 71.73 & 69.12 & 68.43 & 66.22 \\
+DIRE-G & 66.49 & 66.12 & 65.28 & 64.34 & 64.00 & 63.09 & 62.21 & 61.91 \\
+UnivFD & 74.10 & 74.02 & 69.92 & 68.68 & 70.31 & 68.29 & 64.62 & 61.18 \\
+PatchCraft & 72.48 & 71.41 & 69.43 & 67.78 & 75.99 & 74.90 & 73.53 & 72.28 \\
+AIDE & 75.54 & 74.21 & 70.64 & 69.60 & 81.88 & 80.35 & 80.05 & 79.86 \\
+ReAlign & \textbf{82.89} & \textbf{81.52} & \underline{74.83} & \underline{70.28} & \underline{84.85} & \underline{82.04} & \underline{81.16} & \underline{80.51} \\
+\midrule
+\rowcolor[gray]{0.92}
+Ours & \underline{78.36} & \underline{76.43} & \textbf{76.28} & \textbf{76.33} & \textbf{87.02} & \textbf{85.06} & \textbf{83.03} & \textbf{81.36} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Table~\ref{tab:robustness_aide_style} evaluates robustness under input-level JPEG compression and Gaussian blur. Under mild JPEG compression, FUSEGuard ranks second at QF=95 and QF=90, reaching 78.36\% and 76.43\% mean Acc. Under stronger compression, it becomes the strongest method, with 76.28\% at QF=75 and 76.33\% at QF=50. Its JPEG performance changes by only 2.03 points from QF=95 to QF=50, whereas ReAlign \cite{huang2026realign} drops from 82.89\% to 70.28\%.
+
+Gaussian blur shows the clearest robustness advantage. FUSEGuard obtains the best mean Acc at every blur level, from 87.02\% at $\sigma=1$ to 81.36\% at $\sigma=4$. The margins over the second-best results are 2.17, 3.02, 1.87, and 0.85 points as blur increases. These results show that the locked detector retains reliable evidence under common post-processing, especially when compression or blur becomes stronger.
+
+% \FloatBarrier
+
+\subsection{Component Ablation}
+\label{sec:ablation_study}
+
+\begin{table}[t]
+\caption{Core Component Ablation on AIGCDetectBenchmark}
+\label{tab:prior_ablation}
+\centering
+\small
+\providecommand{\tabyes}{\ding{51}}
+\providecommand{\tabno}{\ding{55}}
+\renewcommand{\arraystretch}{1.08}
+\setlength{\tabcolsep}{1.8pt}
+\begin{tabular}{@{}ccccrrrr@{}}
+\toprule
+\multicolumn{4}{c}{Prior} & \multicolumn{4}{c}{Metric (\%)} \\
+\cmidrule(lr){1-4}\cmidrule(lr){5-8}
+Artifact & Semantic & Residual & Native tile & \multicolumn{1}{c}{Acc} & \multicolumn{1}{c}{AP} & \multicolumn{1}{c}{\begin{tabular}[c]{@{}c@{}}Real\\Acc\end{tabular}} & \multicolumn{1}{c}{\begin{tabular}[c]{@{}c@{}}Fake\\Acc\end{tabular}} \\
+\midrule
+\tabno & \tabyes & \tabyes & \tabyes & 84.06 & 94.16 & 96.62 & 71.50 \\
+\tabyes & \tabno & \tabyes & \tabyes & 91.62 & 95.98 & 89.17 & 94.08 \\
+\tabyes & \tabyes & \tabno & \tabyes & 90.62 & 97.51 & 93.23 & 88.00 \\
+\tabyes & \tabyes & \tabyes & \tabno & 93.05 & 99.17 & 95.55 & 90.54 \\
+\midrule
+\tabyes & \tabno & \tabno & \tabno & 85.62 & 93.37 & 78.56 & 92.69 \\
+\tabno & \tabyes & \tabno & \tabno & 78.73 & 87.95 & 94.70 & 62.75 \\
+\tabno & \tabno & \tabyes & \tabno & 88.99 & 93.49 & 90.99 & 86.99 \\
+\midrule
+\rowcolor[gray]{0.92}
+\tabyes & \tabyes & \tabyes & \tabyes & \textbf{94.82} & \textbf{99.34} & \textbf{94.69} & \textbf{94.95} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The ablation results in Table~\ref{tab:prior_ablation} test whether the four priors are mutually replaceable under the fixed-threshold protocol. The complete fusion gives the best overall Acc and AP while keeping Real and Fake accuracies balanced. Removing artifact evidence is the dominant failure mode: Acc drops by 10.8 percentage points, AP drops by 5.2 points, and Fake accuracy falls by 23.5 points, although Real accuracy increases slightly. This asymmetric change indicates that artifact evidence is the fake-side anchor; without it, the detector becomes conservative and misses generated images rather than failing uniformly. Removing semantic evidence produces a smaller aggregate loss but shifts the error to real images, with Real accuracy decreasing by 5.5 points. The semantic prior therefore acts as a calibration counterweight that prevents artifact-led evidence from overcalling real images as fake. Removing residual evidence reduces Acc by 4.2 points and Fake accuracy by 7.0 points, showing that residual traces provide a non-redundant threshold-level correction. Removing native tiles has the smallest AP effect, but its 4.4-point Fake accuracy loss shows that local high-resolution evidence still recovers traces weakened by whole-image resizing.
+
+The single-prior rows further show that no branch can replace the complete fusion. Artifact-only, semantic-only, and residual-only variants all remain at least 5.83 Acc points below the full setting. They also produce asymmetric Real/Fake behavior. Artifact-only retains stronger Fake accuracy but harms Real accuracy. Semantic-only protects Real accuracy but loses Fake recall. Residual-only is more balanced but still below the full detector. Additional diagnostics are consistent with this joint-necessity view. Removing codec/block evidence lowers mean Acc to 84.97 and Fake accuracy to 70.25. The native top-1 tile policy outperforms whole-image-only scoring by 1.78 Acc points. The selected residual scale improves over no residual while avoiding the ranking loss observed at a 2.00 gamma scale. Together, these results support constrained fusion of complementary priors rather than treating any branch as optional or complete on its own. Additional external-benchmark ablations in Tables~\ref{tab:appendix_ufd_prior_ablation} and \ref{tab:appendix_genimage_prior_ablation} show the same source-locked diagnostic pattern on UniversalFakeDetect and GenImage.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.8\textwidth]{Fig/fig5_aigcdetectbenchmark_parameter_sensitivity.png}
+\caption{Parameter sensitivity of FUSEGuard on AIGCDetectBenchmark. Each panel varies one fusion coefficient family while the remaining locked terms are held fixed and reports mean fixed-threshold accuracy across target generators. Gold stars mark the source-selected coefficients, vertical bands show the corresponding selected values, and the dashed line denotes the selected full-model accuracy. The panels examine the tile artifact weight $\beta$, positive semantic coefficients, negative semantic coefficients, and the residual correction weight $\gamma$. The selected constants lie within broad high-accuracy regions rather than at isolated target-specific spikes.}
+\label{fig:parameter_sensitivity}
+\end{figure*}
+
+We further test whether the locked fusion constants are sensitive to small coefficient changes. Figure~\ref{fig:parameter_sensitivity} varies one coefficient family at a time while keeping the remaining terms fixed. The tile and residual curves rise from underweighted settings and then form broad plateaus around the selected values, indicating that these terms provide useful corrections without requiring exact target-side tuning. The semantic coefficients show a similar bounded role. Positive semantic evidence remains stable across a wide range, whereas negative semantic evidence is useful only under the guarded configuration and becomes less reliable when directly amplified. This sensitivity pattern supports the source-gated fusion design: the selected constants improve the fixed-threshold detector, but the reported AIGCDetectBenchmark accuracy is unlikely to depend on a single isolated coefficient setting.
+
+This analysis also clarifies the role of the ablation table. Table~\ref{tab:prior_ablation} removes complete evidence branches, whereas Figure~\ref{fig:parameter_sensitivity} perturbs the coefficients after all branches remain available. The two diagnostics answer different questions. The ablation study shows that artifact, semantic, residual, and native-tile evidence are not interchangeable. The sensitivity study shows that, once these sources are present, the chosen operating point is not a narrow target-tuned optimum. The combination is important for the source-only protocol: a detector could score well either because it uses genuinely complementary evidence or because a fragile coefficient happens to fit the target benchmark. The observed plateaus support the former interpretation while the branch removals identify which evidence source fails when it is absent.
+
+Taken together, Table~\ref{tab:prior_ablation} and Figure~\ref{fig:parameter_sensitivity} define the operating regime used in the cross-benchmark and robustness reports. The full model is not assembled by reading the target benchmark: each evidence branch is fixed before evaluation, and the sensitivity curves are evaluated one coefficient family at a time after the locked setting has already been specified. The observed directions are consistent with the branch-removal failures. Tile evidence recovers accuracy from underweighted settings and then saturates, residual evidence gives a large correction over the no-residual setting before flattening, and direct amplification of negative semantic evidence becomes harmful outside the guarded range. These trends justify a constrained fusion rule rather than a target-specific reweighting stage.
+
+The same diagnostics also explain why the paper reports fixed-threshold Acc alongside AP. A coefficient setting can preserve ranking while shifting the decision boundary, and a removed branch can change Real and Fake accuracies in opposite directions. The experimental section therefore treats mean Acc, AP, and the Real/Fake split as complementary measurements of one locked detector. This convention keeps the strong cases and the remaining calibration failures visible under the same source-only protocol.
+
+\subsection{Qualitative Spatial Attribution Maps}
+\label{sec:spatial_attribution_maps}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{Fig/fig6_spatial_attribution_maps.png}
+\caption{Qualitative spatial attribution maps for real images and generated images from multiple generator families. The top row shows the input images, and the bottom row overlays the corresponding FUSEGuard fused-evidence response maps. Cooler colors denote weaker response, whereas warmer colors denote stronger response. The visualizations provide a qualitative view of where the locked detector concentrates spatial evidence across different image contents and generator types.}
+\label{fig:spatial_attribution_maps}
+\end{figure*}
+
+To complement the quantitative analyses, Figure~\ref{fig:spatial_attribution_maps} visualizes fused spatial evidence responses for representative real and generated images. The examples compare one real image with generated images from ProGAN, StarGAN, StyleGAN, BigGAN, GauGAN, GLIDE, Stable Diffusion v1.5, Midjourney, and DALL-E 2. The response maps summarize spatial evidence from the same low-level and residual cues used by FUSEGuard, including block-energy, residual, and nearest-neighbor-residual responses. The generated examples show spatially non-uniform responses over object boundaries, faces, textures, rendered structures, and background regions. These patterns indicate that the locked detector does not rely on a single fixed image location. Instead, its spatial responses vary with image content and generator family, consistent with the use of complementary artifact, semantic, tile, and residual evidence.
+
+\FloatBarrier
+
+\section{Discussion}
+\label{sec:discussion}
+
+The central contribution of FUSEGuard is a locked operating rule for cross-generator detection. In this setting, the detector cannot be revised after target labels become available. Component priors are fitted on source data, fusion constants are selected from a source-gate split, and the final threshold remains $0.50$ before target benchmarks are inspected. This design does not eliminate domain shift. Its value is that any remaining shift is exposed in the reported metrics rather than absorbed by target-side threshold, checkpoint, or fusion-weight selection.
+
+The ablation results clarify why source-guarded fusion is useful. FUSEGuard is not a loose average of interchangeable detectors. Each prior controls a different failure mode under the source-locked threshold. Artifact evidence supplies the fake-side anchor, semantic evidence protects real-side calibration, residual evidence provides a non-redundant correction, and native-tile evidence preserves local traces weakened by resizing. The full setting is the only configuration that combines high Acc, high AP, and balanced Real/Fake accuracies. This pattern supports constrained fusion as a joint-necessity design. It also defines a boundary: artifact evidence remains the strongest fake-side cue, but artifact evidence alone is not sufficient for a deployable detector.
+
+The experiments also show that cross-generator detection cannot be judged by ranking metrics alone. On AIGCDetectBenchmark, GauGAN and BigGAN retain high AP, but their real-side accuracies fall to 65.66 and 79.35 under the fixed threshold. Wukong shows the opposite pattern, with 77.13 fake accuracy and 98.10 real accuracy. UniversalFakeDetect gives a stronger calibration warning: the same ProGAN-source detector reaches 99.24 mean AP, while mean real accuracy falls to 83.36. These cases indicate that AP and AUC can preserve the ordering signal even when the deployed threshold induces asymmetric errors.
+
+These findings refine, rather than replace, existing cross-generator evaluation practice. Benchmark-level Acc and AP remain useful for comparison, but they are incomplete unless the source protocol and operating threshold are also stated. A detector that ranks samples well may still require a different threshold under a new generator family. Conversely, allowing that threshold to be chosen on the target set can overstate deployable performance. For this reason, the source-only locking rule is part of the method rather than an implementation detail.
+
+Several limitations constrain the interpretation of the results. FUSEGuard uses RGB pixels only and does not exploit prompts, generator metadata, watermarks, camera metadata, or provenance records. The ProGAN-source reports and the GenImage SD v1.4-source report test two source protocols, and they should not be merged into a single source-agnostic claim. The comparisons also combine published reference numbers with our locked reports, so they are best read as benchmark context rather than a target-tuned leaderboard. Because the protocol contains several locked choices, reproducibility also depends on preserving the source split seed, promoted checkpoints, cached component-score configuration, selected fusion constants, and evaluation scripts. Future work should examine broader source diversity, source-only calibration criteria that better control real-side false positives, and robustness under real-world transmission or content shifts without relaxing the report-only role of target labels.
+
+\section{Conclusion}
+\label{sec:conclusion}
+This work examined a practical question for cross-generator AI-generated image detection: what can be trusted when target labels are unavailable for detector selection? FUSEGuard addresses this question by treating the detector as a locked operating rule rather than a collection of scores that can be adjusted after evaluation begins. Its source-guarded fusion integrates artifact, native-tile, semantic, and residual priors into a single fake score, and the experiments show that this design transfers across three public benchmarks while preserving an explicit threshold. The same results also expose the limits of the approach: artifact cues remain the main fake-side evidence, and shifted generators can still move the fixed threshold toward asymmetric real/fake errors. The broader implication is therefore procedural as much as architectural. For cross-generator AI-generated image detection to be deployable and comparable, future reports should specify how scores, fusion constants, calibration, and thresholds are locked before target data are used.
+
+\clearpage
+\appendices
+\section{Benchmark Composition}
+
+This appendix records the benchmark composition used by the external evaluations. Tables~\ref{tab:appendix_genimage_statistics} and \ref{tab:appendix_ufd_statistics} list the source generator, target generators, image sizes, sample counts, and image sources for GenImage and UniversalFakeDetect, respectively. We keep these statistics separate from the performance tables so that the evaluation protocol is explicit before the scores are read. In both tables, Number denotes the total image count for each row, including generated images and paired real images from the same source unless otherwise noted.
+
+\begin{table*}[!b]
+\caption{\textbf{Statistics of Benchmark GenImage.} SD refers to Stable Diffusion. Number reports the total image count for each row, including generated images and paired real images from the same source.}
+\label{tab:appendix_genimage_statistics}
+\centering
+\small
+\renewcommand{\arraystretch}{1.04}
+\setlength{\tabcolsep}{12pt}
+\begin{tabular}{@{}c|cccc@{}}
+\toprule
+& \textbf{Generator} & \textbf{Image Size} & \textbf{Number} & \textbf{Source} \\
+\midrule
+\textbf{Train} & SD v1.4 \cite{rombach2022ldm} & $512\times512$ & 648.0k & ImageNet \cite{deng2009imagenet} \\
+\midrule
+\multirow{8}{*}{\textbf{Test}}
+& BigGAN \cite{brock2019biggan} & $256\times256$ & 24.0k & ImageNet \\
+& ADM \cite{dhariwal2021diffusion} & $256\times256$ & 24.0k & ImageNet \\
+& GLIDE \cite{nichol2022glide} & $256\times256$ & 24.0k & ImageNet \\
+& Midjourney \cite{midjourney2023} & $1024\times1024$ & 24.0k & ImageNet \\
+& SD v1.4 & $512\times512$ & 24.0k & ImageNet \\
+& SD v1.5 & $512\times512$ & 32.0k & ImageNet \\
+& VQDM \cite{gu2022vqdm} & $256\times256$ & 24.0k & ImageNet \\
+& Wukong \cite{wukong2023} & $512\times512$ & 24.0k & ImageNet \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table*}[!b]
+\caption{\textbf{Statistics of Benchmark UniversalFakeDetect \cite{ojha2023univfd,wang2020cnnspot}.} Number reports the total image count for each row. The train row follows our 100k ProGAN-source protocol. Image Size follows the released benchmark preprocessing; variable denotes released native/restoration resolutions rather than one fixed square size.}
+\label{tab:appendix_ufd_statistics}
+\centering
+\small
+\renewcommand{\arraystretch}{1.02}
+\setlength{\tabcolsep}{7pt}
+\begin{tabular}{@{}c|cccc@{}}
+\toprule
+& \textbf{Generator} & \textbf{Image Size} & \textbf{Number} & \textbf{Source} \\
+\midrule
+\textbf{Train} & ProGAN \cite{karras2018progan} & $256\times256$ & 100.0k & LSUN \cite{yu2015lsun} \\
+\midrule
+\multirow{21}{*}{\textbf{Test}}
+& ProGAN & $256\times256$ & 8.0k & LSUN \\
+& StyleGAN \cite{karras2019stylegan} & $256\times256$ & 12.0k & LSUN \\
+& BigGAN \cite{brock2019biggan} & $256\times256$ & 4.0k & ImageNet \cite{deng2009imagenet} \\
+& CycleGAN \cite{zhu2017cyclegan} & $256\times256$ & 2.6k & ImageNet \\
+& StarGAN \cite{choi2018stargan} & $256\times256$ & 4.0k & CelebA \cite{liu2015celeba} \\
+& GauGAN \cite{park2019spade} & $256\times256$ & 10.0k & COCO \cite{lin2014coco} \\
+& StyleGAN2 \cite{karras2020stylegan2} & $256\times256$ & 16.0k & LSUN \\
+& WhichFaceIsReal \cite{whichfaceisreal2023} & $1024\times1024$ & 2.0k & FFHQ \cite{karras2019stylegan} \\
+& DeepFake & short side 256 & 5.4k & FaceForensics++ \cite{rossler2019faceforensics} \\
+& SITD \cite{chen2018sid} & variable & 0.4k & SID low-light data \\
+& SAN \cite{dai2019san} & variable & 0.4k & SR benchmarks \\
+& CRN \cite{chen2017crn} & $256\times256$ & 12.8k & GTA \cite{richter2016playing} \\
+& IMLE \cite{li2019imle} & $256\times256$ & 12.8k & GTA \\
+& Guided diffusion \cite{dhariwal2021diffusion} & $256\times256$ & 2.0k & LAION captions \cite{schuhmann2021laion400m} \\
+& LDM-100 \cite{rombach2022ldm} & $256\times256$ & 2.0k & LAION captions \\
+& LDM-200 & $256\times256$ & 2.0k & LAION captions \\
+& LDM-200-CFG & $256\times256$ & 2.0k & LAION captions \\
+& GLIDE-100-10 \cite{nichol2022glide} & $256\times256$ & 2.0k & LAION captions \\
+& GLIDE-100-27 & $256\times256$ & 2.0k & LAION captions \\
+& GLIDE-50-27 & $256\times256$ & 2.0k & LAION captions \\
+& DALL-E \cite{ramesh2021dalle} & $256\times256$ & 2.0k & LAION captions \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\clearpage
+\section{Additional Average-Precision Results}
+
+Tables~\ref{tab:aigcdetect_ap_comparison} and \ref{tab:genimage_ap_comparison} report the AP counterparts to the main-text Acc comparisons on AIGCDetectBenchmark and GenImage, respectively. These results evaluate threshold-free ranking quality under the same locked source protocols used in the main text, so they complement the fixed-threshold tables rather than replace them. They are reported as final measurements rather than as criteria for selecting models, thresholds, or fusion constants. The generator order and highlighting convention follow the corresponding main-text tables.
+
+\begin{table*}[!b]
+\caption{Comparison on AIGCDetectBenchmark. Each entry reports AP (\%) for detecting real and fake images from the generator named in the column. DIRE-G denotes the ProGAN-source DIRE variant, whereas DIRE-D follows the ADM-source DIRE setup; SDAIE is the one-class variant, whereas SDAIE$^\dagger$ is the binary ProGAN-source variant. The best and second-best values in each column are marked in bold and underline, respectively.}
+\label{tab:aigcdetect_ap_comparison}
+\centering
+\small
+\providecommand{\rotgen}[1]{\makebox[0pt][l]{\rotatebox{60}{\textit{#1}}}}
+\renewcommand{\arraystretch}{1.03}
+\setlength{\tabcolsep}{0.6pt}
+\begin{tabularx}{\textwidth}{@{}l>{\centering\arraybackslash}p{0.095\textwidth}*{18}{Y}@{}}
+\toprule
+Method & Ref. & \rotgen{ProGAN} & \rotgen{StyleGAN} & \rotgen{BigGAN} & \rotgen{CycleGAN} & \rotgen{StarGAN} & \rotgen{GauGAN} & \rotgen{StyleGAN2} & \rotgen{WFIR} & \rotgen{ADM} & \rotgen{GLIDE} & \rotgen{Midjourney} & \rotgen{SD v1.4} & \rotgen{SD v1.5} & \rotgen{VQDM} & \rotgen{Wukong} & \rotgen{DALL-E 2} & \rotgen{SDXL} & \rotgen{Mean} \\
+\midrule
+CNNSpot & CVPR 2020 & \textbf{100.0} & 99.8 & 86.0 & 94.9 & 99.0 & 90.8 & 99.5 & \textbf{99.9} & 75.7 & 72.3 & 66.2 & 61.2 & 61.6 & 68.8 & 57.3 & 53.5 & 72.6 & 79.95 \\
+FreDect & ICML 2020 & \textbf{100.0} & 89.0 & 93.6 & 84.8 & 99.5 & 82.8 & 82.5 & 55.9 & 61.8 & 52.9 & 46.1 & 37.8 & 37.8 & 85.1 & 39.6 & 38.2 & 49.5 & 66.87 \\
+Fusing & ICIP 2022 & \textbf{100.0} & 99.5 & 90.7 & 95.5 & \underline{99.8} & 88.3 & 99.6 & 93.3 & 94.1 & 77.5 & 70.0 & 65.4 & 65.7 & 75.6 & 64.6 & 68.1 & 79.4 & 83.95 \\
+GramNet & CVPR 2020 & \textbf{100.0} & 99.2 & 81.8 & 95.3 & 99.2 & 85.0 & 99.1 & 95.2 & 73.1 & 66.8 & 56.8 & 59.8 & 60.4 & 61.1 & 55.6 & 49.8 & 68.2 & 76.86 \\
+LNP & ECCV 2022 & \textbf{100.0} & 99.3 & 94.5 & 89.5 & \textbf{100.0} & 84.5 & 99.7 & 42.8 & 93.4 & 92.8 & 86.9 & 96.3 & 96.0 & 94.9 & 95.3 & 98.3 & 87.8 & 91.29 \\
+LGrad & CVPR 2023 & \textbf{100.0} & 98.3 & 92.9 & 95.0 & \textbf{100.0} & 95.4 & 97.9 & 58.0 & 73.0 & 80.4 & 71.9 & 62.4 & 62.9 & 77.5 & 62.5 & 82.6 & 80.0 & 81.80 \\
+DIRE-G & ICCV 2023 & \underline{99.1} & 91.7 & 75.3 & 80.6 & 99.3 & 72.2 & 88.3 & 60.1 & 85.8 & 78.4 & 61.9 & 49.9 & 49.5 & 54.6 & 55.4 & 74.5 & 54.0 & 72.38 \\
+DIRE-D & ICCV 2023 & 58.8 & 56.7 & 46.9 & 50.0 & 40.6 & 47.3 & 58.0 & 59.0 & \textbf{99.8} & 99.5 & 97.3 & 98.6 & 98.8 & 99.0 & 98.4 & 99.7 & 99.1 & 76.92 \\
+UnivFD & CVPR 2023 & \textbf{100.0} & 97.6 & 99.3 & 99.8 & 99.4 & \textbf{100.0} & 97.9 & 96.7 & 86.8 & 83.8 & 74.0 & 86.1 & 85.8 & 96.5 & 91.1 & 63.0 & 67.6 & 89.73 \\
+PatchCraft & arXiv 2023 & \textbf{100.0} & 99.0 & 99.4 & 85.3 & \textbf{100.0} & 81.3 & 97.7 & 95.3 & 93.4 & 94.0 & 96.5 & 99.1 & 99.1 & 96.3 & 97.5 & 99.6 & \underline{99.9} & 96.07 \\
+NPR & CVPR 2024 & \textbf{100.0} & \underline{99.9} & 94.0 & 99.1 & \textbf{100.0} & 88.7 & \textbf{100.0} & 94.0 & 98.3 & \underline{99.6} & 99.0 & 99.7 & 99.6 & 99.2 & 98.9 & \textbf{100.0} & 99.6 & 98.21 \\
+AIDE & ICLR 2025 & \textbf{100.0} & \textbf{100.0} & 94.4 & \underline{99.9} & \textbf{100.0} & 97.7 & \textbf{100.0} & \underline{99.6} & 99.0 & 99.1 & 88.4 & 98.2 & 98.2 & \underline{99.4} & 98.6 & 99.5 & 99.4 & 98.31 \\
+SDAIE & TPAMI 2026 & 87.3 & 89.7 & 66.0 & 85.9 & 99.1 & 73.4 & 89.5 & 79.4 & 95.9 & 99.3 & 92.8 & 96.5 & 96.4 & 97.2 & 95.6 & 95.9 & 96.6 & 90.39 \\
+SDAIE$^\dagger$ & TPAMI 2026 & \textbf{100.0} & \textbf{100.0} & 97.3 & 99.4 & \textbf{100.0} & 89.9 & \textbf{100.0} & 98.1 & 98.3 & 98.5 & 99.4 & \underline{99.9} & \underline{99.8} & 97.9 & 99.4 & \underline{99.9} & \textbf{100.0} & \underline{98.69} \\
+FatFormer & CVPR 2024 & \textbf{100.0} & 99.8 & \textbf{100.0} & \textbf{100.0} & \textbf{100.0} & \textbf{100.0} & \underline{99.9} & 98.5 & 91.7 & 96.0 & 62.8 & 81.1 & 81.1 & 97.0 & 85.9 & 81.8 & 86.9 & 91.90 \\
+RINE & ECCV 2024 & \textbf{100.0} & 99.4 & \underline{99.9} & \textbf{100.0} & \textbf{100.0} & \textbf{100.0} & \textbf{100.0} & 99.5 & 96.3 & 97.9 & 87.7 & 98.4 & 98.3 & 99.2 & 98.6 & 89.6 & 96.3 & 97.71 \\
+C2P-CLIP & AAAI 2025 & 83.5 & 65.8 & 79.0 & 98.3 & 87.8 & 71.3 & 66.5 & 99.5 & 97.4 & 98.8 & \underline{99.5} & \textbf{100.0} & \textbf{99.9} & 98.8 & \textbf{99.7} & 99.8 & \underline{99.9} & 90.91 \\
+D$^3$ & CVPR 2025 & \textbf{100.0} & 99.2 & \textbf{100.0} & 98.5 & 99.4 & \underline{99.9} & 99.4 & 91.6 & \underline{99.5} & 99.5 & \underline{99.5} & 99.8 & 99.7 & \textbf{99.6} & \underline{99.6} & 86.5 & 98.8 & 98.25 \\
+CO-SPY & CVPR 2025 & \textbf{100.0} & \textbf{100.0} & 98.2 & 99.4 & \textbf{100.0} & 98.1 & \textbf{100.0} & 80.2 & 89.6 & 97.2 & 94.3 & 93.2 & 93.0 & 91.2 & 89.6 & 97.2 & 98.2 & 95.25 \\
+\midrule
+\rowcolor[gray]{0.88}
+Ours & -- & \textbf{100.0} & \textbf{100.0} & 99.3 & 99.8 & \textbf{100.0} & 99.5 & \textbf{100.0} & 97.5 & \underline{99.5} & \textbf{99.9} & \textbf{99.6} & 98.6 & 98.8 & 99.1 & 97.5 & \underline{99.9} & \underline{99.9} & \textbf{99.34} \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\begin{table*}[!b]
+\caption{Comparison on GenImage. Each entry reports AP (\%) for detecting real and fake images from the generator named in the column. The best and second-best values in each column are marked in bold and underline, respectively.}
+\label{tab:genimage_ap_comparison}
+\centering
+\small
+\renewcommand{\arraystretch}{1.0}
+\setlength{\tabcolsep}{2pt}
+\begin{tabularx}{\textwidth}{@{}l>{\centering\arraybackslash}p{0.105\textwidth}*{9}{>{\centering\arraybackslash}X}@{}}
+\toprule
+Method & Ref. & BigGAN & Midjourney & SD v1.4 & SD v1.5 & ADM & GLIDE & Wukong & VQDM & Mean \\
+\midrule
+LGrad & CVPR 2023 & 39.36 & 77.63 & 79.15 & 80.27 & 51.38 & 50.57 & 75.61 & 51.94 & 63.24 \\
+DIRE & ICCV 2023 & 54.58 & 86.49 & 99.09 & 99.09 & 82.18 & 81.65 & 98.85 & 62.69 & 83.08 \\
+UnivFD & CVPR 2023 & 96.13 & 92.47 & 97.08 & 97.09 & 67.91 & 93.66 & 93.63 & 78.48 & 89.55 \\
+NPR & CVPR 2024 & 88.64 & 97.61 & 98.77 & 98.82 & 93.16 & 98.34 & 98.06 & 93.05 & 95.81 \\
+FreqNet & AAAI 2024 & 94.81 & 78.96 & 74.35 & 75.62 & 91.47 & 88.84 & 66.72 & 89.63 & 82.55 \\
+FatFormer & CVPR 2024 & \underline{99.47} & 62.65 & 81.18 & 80.98 & 91.74 & 95.81 & 85.81 & 96.96 & 86.83 \\
+LaRE\textsuperscript{2} & CVPR 2024 & 97.40 & 98.08 & 99.88 & 99.80 & 94.87 & 95.14 & 99.86 & 97.55 & 97.82 \\
+AIDE & ICLR 2025 & 93.48 & 97.95 & \underline{99.95} & \underline{99.98} & 94.58 & 99.08 & \underline{99.97} & 97.07 & 97.76 \\
+FerretNet & NeurIPS 2025 & \textbf{99.58} & 97.60 & \textbf{100.00} & \textbf{100.00} & \underline{96.60} & \underline{99.80} & \textbf{99.99} & \underline{98.32} & \textbf{98.99} \\
+EFFORT & ICML 2025 & 98.38 & \underline{98.96} & 99.82 & 99.82 & 93.76 & 96.99 & 99.33 & 96.13 & 97.90 \\
+\midrule
+\rowcolor[gray]{0.88}
+Ours & -- & 92.05 & \textbf{99.19} & \textbf{100.00} & \textbf{100.00} & \textbf{97.70} & \textbf{99.92} & \textbf{99.99} & \textbf{99.17} & \underline{98.50} \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\clearpage
+\section{External Component Ablations}
+
+Tables~\ref{tab:appendix_ufd_prior_ablation} and \ref{tab:appendix_genimage_prior_ablation} report the external-benchmark core component ablations after the AP comparisons. They extend the main-text ablation analysis by checking whether the same priors remain necessary when the target benchmark changes. As in the main text, the point is not only which row scores highest, but how removing a prior shifts the Real/Fake balance under the locked protocol. In both tables, the shaded row denotes the full FUSEGuard configuration. The whole-artifact row uses the whole-image artifact score without native-tile correction, whereas the artifact-only row additionally keeps the native-tile correction.
+
+\begin{table*}[!b]
+\centering
+\small
+\providecommand{\tabyes}{\ding{51}}
+\providecommand{\tabno}{\ding{55}}
+\renewcommand{\arraystretch}{1.04}
+\setlength{\tabcolsep}{1.6pt}
+\begin{minipage}[t]{0.49\textwidth}
+\centering
+\caption{\textbf{Core component ablation on UniversalFakeDetect.}}
+\label{tab:appendix_ufd_prior_ablation}
+\begin{tabular}{@{}ccccrrrr@{}}
+\toprule
+\multicolumn{4}{c}{Prior} & \multicolumn{4}{c}{Metric (\%)} \\
+\cmidrule(lr){1-4}\cmidrule(lr){5-8}
+Artifact & Semantic & Residual & Native tile & \multicolumn{1}{c}{Acc} & \multicolumn{1}{c}{AP} & \multicolumn{1}{c}{\begin{tabular}[c]{@{}c@{}}Real\\Acc\end{tabular}} & \multicolumn{1}{c}{\begin{tabular}[c]{@{}c@{}}Fake\\Acc\end{tabular}} \\
+\midrule
+\tabyes & \tabno & \tabno & \tabno & 80.84 & 88.14 & 76.06 & 85.62 \\
+\tabyes & \tabno & \tabno & \tabyes & 82.27 & 91.22 & 73.69 & 90.85 \\
+\tabno & \tabyes & \tabno & \tabno & 87.19 & 95.44 & 94.13 & 80.25 \\
+\tabno & \tabno & \tabyes & \tabno & 84.00 & 87.23 & 79.52 & 88.48 \\
+\midrule
+\tabno & \tabyes & \tabyes & \tabno & 89.31 & 97.62 & 92.42 & 86.20 \\
+\tabyes & \tabno & \tabyes & \tabyes & 86.07 & 94.55 & 78.94 & 93.20 \\
+\tabyes & \tabyes & \tabno & \tabyes & 87.97 & 97.58 & 84.75 & 91.18 \\
+\midrule
+\rowcolor[gray]{0.92}
+\tabyes & \tabyes & \tabyes & \tabyes & \textbf{89.39} & \textbf{99.24} & \textbf{83.36} & \textbf{95.41} \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.49\textwidth}
+\centering
+\caption{\textbf{Core component ablation on GenImage.}}
+\label{tab:appendix_genimage_prior_ablation}
+\begin{tabular}{@{}ccccrrrr@{}}
+\toprule
+\multicolumn{4}{c}{Prior} & \multicolumn{4}{c}{Metric (\%)} \\
+\cmidrule(lr){1-4}\cmidrule(lr){5-8}
+Artifact & Semantic & Residual & Native tile & \multicolumn{1}{c}{Acc} & \multicolumn{1}{c}{AP} & \multicolumn{1}{c}{\begin{tabular}[c]{@{}c@{}}Real\\Acc\end{tabular}} & \multicolumn{1}{c}{\begin{tabular}[c]{@{}c@{}}Fake\\Acc\end{tabular}} \\
+\midrule
+\tabyes & \tabno & \tabno & \tabno & 67.68 & 98.27 & 35.75 & 99.60 \\
+\tabyes & \tabno & \tabno & \tabyes & 54.29 & 96.90 & 8.78 & 99.80 \\
+\tabno & \tabyes & \tabno & \tabno & 81.61 & 89.36 & 84.90 & 78.32 \\
+\tabno & \tabno & \tabyes & \tabno & 71.14 & 87.28 & 99.66 & 42.62 \\
+\midrule
+\tabno & \tabyes & \tabyes & \tabno & 83.24 & 91.56 & 94.59 & 71.89 \\
+\tabyes & \tabno & \tabyes & \tabyes & 90.46 & 98.43 & 83.99 & 96.94 \\
+\tabyes & \tabyes & \tabno & \tabyes & 77.43 & 97.39 & 55.46 & 99.41 \\
+\midrule
+\rowcolor[gray]{0.92}
+\tabyes & \tabyes & \tabyes & \tabyes & \textbf{93.84} & \textbf{98.50} & \textbf{94.91} & \textbf{92.76} \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+\end{table*}
+
+The external ablations are consistent with the main AIGCDetectBenchmark analysis. Removing a prior changes the Real/Fake balance rather than only reducing the mean score, and artifact-only variants remain asymmetric across benchmarks. The full configuration is therefore retained as the reportable setting because it is the only one that jointly preserves high Acc, high AP, and stable class-wise behavior under both external source protocols.
+
+\clearpage
+\balance
+\bibliographystyle{IEEEtran_doi}
+\bibliography{ref}
+
+\end{document}

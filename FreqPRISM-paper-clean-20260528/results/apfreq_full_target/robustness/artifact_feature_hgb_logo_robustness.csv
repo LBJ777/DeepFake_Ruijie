@@ -1,0 +1,9 @@
+view,canonical_view,mean_acc,mean_ap,folds,n,aggregation,candidate_id
+jpeg95,jpeg_q95,78.35807322216354,0.8906581347539482,17,152598,generator_equal_mean,artifact_hgb_iter200
+jpeg90,jpeg_q90,76.42708461386032,0.8656373026563934,17,152598,generator_equal_mean,artifact_hgb_iter200
+jpeg75,jpeg_q75,76.2800148579918,0.8388396342402986,17,152598,generator_equal_mean,artifact_hgb_iter200
+jpeg50,jpeg_q50,76.32740642231607,0.8266407387112076,17,152598,generator_equal_mean,artifact_hgb_iter200
+blur1,blur_sigma1,87.02138708851541,0.9370526300477252,17,152598,generator_equal_mean,artifact_hgb_iter200
+blur2,blur_sigma2,85.06225287818152,0.9139639552818473,17,152598,generator_equal_mean,artifact_hgb_iter200
+blur3,blur_sigma3,83.0301228402534,0.8998224836160423,17,152598,generator_equal_mean,artifact_hgb_iter200
+blur4,blur_sigma4,81.36190558389497,0.8874898782830128,17,152598,generator_equal_mean,artifact_hgb_iter200

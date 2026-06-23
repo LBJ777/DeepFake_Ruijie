@@ -1,0 +1,11 @@
+{
+  "artifact_alpha": -0.4,
+  "feature_dim": 849,
+  "model_path": "/data/lizihao/FreqPRISM-main/checkpoints/artifact_prior/artifact_prior_models.joblib",
+  "random_state": 101,
+  "source_root": "/data/lizihao/AIGC/AIGCDetectBenchmark-main/dataset/train_100k/progan_train",
+  "stage": "artifact_prior",
+  "target_labels_used": false,
+  "train_per_label": 0,
+  "train_variant": "expand:clean,jpeg50,jpeg50,resize50,blur1"
+}

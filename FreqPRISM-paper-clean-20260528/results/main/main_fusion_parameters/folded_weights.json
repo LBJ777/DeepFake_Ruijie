@@ -1,0 +1,13 @@
+{
+  "method_name": "FreqPRISM pure source-only stress-calibrated fusion folded into config",
+  "selection_data": "source_gate_stress_only",
+  "selection_protocol": "results/main/pure_source_stress_calibration/selection_protocol.json",
+  "selected_weights": {
+    "residual_scale": 1.0,
+    "semantic_neg_scale": 1.0,
+    "semantic_pos_scale": 1.0,
+    "tile_scale": 1.0
+  },
+  "target_labels_used_for_selection": false,
+  "weights_are_folded_into_config": true
+}

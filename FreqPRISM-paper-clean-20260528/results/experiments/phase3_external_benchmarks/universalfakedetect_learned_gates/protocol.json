@@ -1,0 +1,24 @@
+{
+  "component_dir": "/data/lizihao/FreqPRISM-main/results/experiments/phase3_external_benchmarks/universalfakedetect_components",
+  "config": "configs/apfreq_train100k_full.yaml",
+  "mean": {
+    "mean_acc": 89.38674262978543,
+    "mean_ap": 99.24380389168454,
+    "mean_auc": 99.18764189494554,
+    "mean_f_acc": 95.4126158089421,
+    "mean_fnr": 4.587384191057889,
+    "mean_fpr": 16.641840903898096,
+    "mean_r_acc": 83.3581590961019
+  },
+  "policy": "learned_weights",
+  "target_labels_used_for_final_report_only": true,
+  "target_labels_used_for_selection": false,
+  "threshold": 0.5,
+  "weights": {
+    "residual_scale": 1.0,
+    "semantic_neg_scale": 1.0,
+    "semantic_pos_scale": 1.0,
+    "tile_scale": 1.0
+  },
+  "weights_json": "/data/lizihao/FreqPRISM-main/results/main/main_fusion_parameters/folded_weights.json"
+}

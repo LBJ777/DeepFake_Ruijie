@@ -1,0 +1,24 @@
+{
+  "component_dir": "/data/lizihao/FreqPRISM-main/results/phase2_current_params/component_cache/current17_components",
+  "config": "configs/apfreq_train100k_full.yaml",
+  "mean": {
+    "mean_acc": 94.82305609326008,
+    "mean_ap": 99.3441432768455,
+    "mean_auc": 99.30291948043306,
+    "mean_f_acc": 94.95312245328778,
+    "mean_fnr": 5.046877546712226,
+    "mean_fpr": 5.307010266767613,
+    "mean_r_acc": 94.69298973323238
+  },
+  "policy": "learned_weights",
+  "target_labels_used_for_final_report_only": true,
+  "target_labels_used_for_selection": false,
+  "threshold": 0.5,
+  "weights": {
+    "residual_scale": 1.0,
+    "semantic_neg_scale": 1.0,
+    "semantic_pos_scale": 1.0,
+    "tile_scale": 1.0
+  },
+  "weights_json": "/data/lizihao/FreqPRISM-main/results/main/main_fusion_parameters/folded_weights.json"
+}

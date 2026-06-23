@@ -1,0 +1,2 @@
+{"checkpoint": "/data/lizihao/FreqPRISM-main/results/source_fit_gate_repro/checkpoints/residual_prior/checkpoint-0.pth", "epoch": 0, "target_labels_used": false, "train_loss": 0.14724374594334513}
+{"checkpoint": "/data/lizihao/FreqPRISM-main/results/source_fit_gate_repro/checkpoints/residual_prior/checkpoint-1.pth", "epoch": 1, "target_labels_used": false, "train_loss": 0.01985116590568796}

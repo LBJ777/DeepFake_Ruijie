@@ -1,0 +1,24 @@
+{
+  "ci_metrics": [
+    "mean_acc",
+    "mean_f_acc",
+    "mean_r_acc",
+    "tail_f_acc",
+    "gaugan_biggan_r_acc"
+  ],
+  "component_dir": "/data/lizihao/FreqPRISM-main/results/phase2_current_params/component_cache/current17_components",
+  "config": "apfreq_train100k_full.yaml",
+  "delta_direction": "base_variant minus variant",
+  "n_bootstrap": 1000,
+  "outputs": [
+    "prior_drop_one_ci.csv",
+    "tile_resolution_ci.csv",
+    "residual_npr_ci.csv",
+    "fusion_drop_weight_ci.csv"
+  ],
+  "phase": "phase2_bootstrap_ci",
+  "rank_metrics": "mean_ap and mean_auc are observed deltas only in these CI CSVs; full observed AP/AUC are in each experiment overall.csv",
+  "resampling": "paired bootstrap within each current17 generator; each replicate preserves generator sample count",
+  "seed": 100,
+  "weights_json": "/data/lizihao/FreqPRISM-main/results/main/main_fusion_parameters/folded_weights.json"
+}

@@ -1,0 +1,23 @@
+{
+  "clip_model": "ViT-L/14",
+  "holdout_manifest": "/data/lizihao/FreqPRISM-main/results/source_fit_gate_repro/source_split/source_gate_manifest.csv",
+  "holdout_per_label": 0,
+  "holdout_sample_count": 20000,
+  "model_path": "/data/lizihao/FreqPRISM-main/results/source_fit_gate_repro/checkpoints/semantic_prior/semantic_probe.joblib",
+  "source_holdout": {
+    "acc": 99.955,
+    "ap": 99.99988539469487,
+    "auc": 99.999885,
+    "f_acc": 99.96000000000001,
+    "fnr": 0.03999999999999204,
+    "fpr": 0.04999999999999716,
+    "r_acc": 99.95
+  },
+  "stage": "semantic_prior",
+  "target_labels_used_for_final_metrics_only": false,
+  "target_labels_used_for_selection": false,
+  "target_mean": null,
+  "train_manifest": "/data/lizihao/FreqPRISM-main/results/source_fit_gate_repro/source_split/source_fit_manifest.csv",
+  "train_per_label": 0,
+  "train_sample_count": 80000
+}

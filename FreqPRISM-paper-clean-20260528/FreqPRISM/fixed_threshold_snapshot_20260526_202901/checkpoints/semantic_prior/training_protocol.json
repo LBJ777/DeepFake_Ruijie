@@ -1,0 +1,20 @@
+{
+  "clip_model": "ViT-L/14",
+  "holdout_per_label": 0,
+  "model_path": "/data/lizihao/FreqPRISM-main/checkpoints/semantic_prior/semantic_probe.joblib",
+  "random_state": 101,
+  "source_holdout": {
+    "acc": 99.99900000000001,
+    "ap": 99.99999976002879,
+    "auc": 99.99999976000001,
+    "f_acc": 99.998,
+    "fnr": 0.001999999999995339,
+    "fpr": 0.0,
+    "r_acc": 100.0
+  },
+  "stage": "semantic_prior",
+  "target_labels_used_for_final_metrics_only": false,
+  "target_labels_used_for_selection": false,
+  "target_mean": null,
+  "train_per_label": 0
+}

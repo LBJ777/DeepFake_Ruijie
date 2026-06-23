@@ -1,0 +1,42 @@
+{
+  "artifact_forward_batch_size": 64,
+  "artifact_tile_batch_size": 64,
+  "component_dir": "/data/lizihao/FreqPRISM-main/results/phase2_current_params/component_cache/current17_components",
+  "config": "configs/apfreq_train100k_full.yaml",
+  "device": "cuda:1",
+  "image_level_tile_variants": true,
+  "note": "Image-level tile variants rescore only the artifact tile evidence T while keeping W/S/R fixed from the locked component cache. RZ6 downsample-before-full-pipeline requires full W/T/S/R rescoring and is not included in this run.",
+  "phase": "phase2_tile_resolution_ablation",
+  "resized_max_side": 512,
+  "target_labels_used_for_final_report_only": true,
+  "target_labels_used_for_selection": false,
+  "threshold": 0.5,
+  "tile_variant_cache_dir": "/data/lizihao/FreqPRISM-main/results/phase2_current_params/tile_resolution_ablation/tile_variant_cache",
+  "variants": {
+    "RZ0_full_native_tile": {
+      "description": "current W + native top1 T + S + R",
+      "name": "Full native tile"
+    },
+    "RZ1_whole_only_no_tile": {
+      "description": "remove native tile evidence T",
+      "name": "Whole only / no tile"
+    },
+    "RZ2_resized512_tile": {
+      "description": "resize long side to 512 before tile extraction; keep W/S/R fixed",
+      "name": "Resized-512 tile"
+    },
+    "RZ3_center_crop_tile": {
+      "description": "replace native tile coverage with one center tile; keep W/S/R fixed",
+      "name": "Center crop tile"
+    },
+    "RZ4_tile_mean_aggregation": {
+      "description": "aggregate native tile scores by mean instead of top1; keep W/S/R fixed",
+      "name": "Native tile mean aggregation"
+    },
+    "RZ5_current_top1_tile": {
+      "description": "explicit current top1 tile aggregation from component cache",
+      "name": "Current top1 tile"
+    }
+  },
+  "weights_json": "/data/lizihao/FreqPRISM-main/results/main/main_fusion_parameters/folded_weights.json"
+}

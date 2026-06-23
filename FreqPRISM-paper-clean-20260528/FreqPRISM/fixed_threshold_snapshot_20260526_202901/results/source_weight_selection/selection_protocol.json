@@ -1,0 +1,41 @@
+{
+  "initial_composition": {
+    "alpha_high_neg": 0.0,
+    "alpha_high_neg_guard": 0.2,
+    "alpha_high_pos": 0.2,
+    "alpha_low_neg": 0.15,
+    "alpha_low_pos": 0.15,
+    "beta": 0.2,
+    "gamma": 0.08,
+    "high_res_threshold": 960.0,
+    "threshold": 0.5,
+    "tile_delta_threshold": 0.0,
+    "tile_grid_size": 3,
+    "tile_mode": "top1",
+    "tile_size": 256
+  },
+  "note": "This entrypoint records the source-only grid for FreqPRISM. Run score extraction on source validation before changing fixed composition weights.",
+  "project": "FreqPRISM",
+  "selection": {
+    "alpha_grid": [
+      0.1,
+      0.15,
+      0.2
+    ],
+    "beta_grid": [
+      0.15,
+      0.2,
+      0.25
+    ],
+    "gamma_grid": [
+      0.05,
+      0.08,
+      0.1,
+      0.12
+    ],
+    "source_only": true,
+    "target_labels_used": false
+  },
+  "source_root": "/data/lizihao/AIGC/AIGCDetectBenchmark-main/dataset/train_100k/progan_train",
+  "target_labels_used": false
+}

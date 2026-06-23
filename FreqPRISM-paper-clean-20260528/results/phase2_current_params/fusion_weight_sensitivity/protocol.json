@@ -1,0 +1,109 @@
+{
+  "alpha_high_neg_values": [
+    0.0,
+    0.02,
+    0.05,
+    0.1,
+    0.15,
+    0.2
+  ],
+  "alpha_split_sweep_values": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0,
+    1.25,
+    1.5
+  ],
+  "bootstrap_level": "current17_generator_paired",
+  "bootstrap_samples": 1000,
+  "bootstrap_seed": 20260528,
+  "compact_sweep_values": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0,
+    1.25,
+    1.5
+  ],
+  "current_component_dir": "/data/lizihao/FreqPRISM-main/results/phase2_current_params/component_cache/current17_components",
+  "gamma_sweep_values": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0,
+    1.25,
+    1.5,
+    1.75,
+    2.0
+  ],
+  "method_name": "Prior fusion weight sensitivity and learnable-weight ablation",
+  "paper_table_specs": [
+    {
+      "name": "table4a_beta_ablation",
+      "parameter": "beta_scale",
+      "reference_value": 1.0
+    },
+    {
+      "name": "table4b_alpha_pos_ablation",
+      "parameter": "semantic_pos_scale",
+      "reference_value": 1.0
+    },
+    {
+      "name": "table4c_alpha_neg_ablation",
+      "parameter": "semantic_neg_scale",
+      "reference_value": 1.0
+    },
+    {
+      "name": "table4d_gamma_ablation",
+      "parameter": "gamma_scale",
+      "reference_value": 1.0
+    },
+    {
+      "name": "tableS4d_alpha_low_pos_ablation",
+      "parameter": "alpha_low_pos_scale",
+      "reference_value": 1.0
+    },
+    {
+      "name": "tableS4e_alpha_low_neg_ablation",
+      "parameter": "alpha_low_neg_scale",
+      "reference_value": 1.0
+    },
+    {
+      "name": "tableS4f_alpha_high_pos_ablation",
+      "parameter": "alpha_high_pos_scale",
+      "reference_value": 1.0
+    },
+    {
+      "name": "tableS4g_alpha_high_neg_guard_ablation",
+      "parameter": "alpha_high_neg_guard_scale",
+      "reference_value": 1.0
+    },
+    {
+      "name": "tableS4h_alpha_high_neg_direct_ablation",
+      "parameter": "alpha_high_neg_direct",
+      "reference_value": 0.0
+    }
+  ],
+  "paper_tables": [
+    "table4a_beta_ablation",
+    "table4b_alpha_pos_ablation",
+    "table4c_alpha_neg_ablation",
+    "table4d_gamma_ablation",
+    "tableS4d_alpha_low_pos_ablation",
+    "tableS4e_alpha_low_neg_ablation",
+    "tableS4f_alpha_high_pos_ablation",
+    "tableS4g_alpha_high_neg_guard_ablation",
+    "tableS4h_alpha_high_neg_direct_ablation"
+  ],
+  "phase": "phase2_fusion_weight_sensitivity",
+  "source_component_dir": "/data/lizihao/FreqPRISM-main/results/phase2_current_params/component_cache/source_gate_components",
+  "target_labels_used_for_final_report_only": true,
+  "target_labels_used_for_selection": false,
+  "threshold": 0.5,
+  "variant_count": 71,
+  "weights_json": "/data/lizihao/FreqPRISM-main/results/main/main_fusion_parameters/folded_weights.json"
+}

@@ -1,0 +1,11 @@
+delta_mean_acc,delta_mean_ap,delta_mean_auc,variant,variant_name
+0.0,0.0,0.0,AF0_full_artifact_features,Full artifact features
+-9.856496932360457,-0.5220891134976853,-0.5901529120565954,AF1_no_codec_block,No codec/block
+-0.19079121459719772,-0.049181424482412694,-0.05260292561787594,AF2_no_chroma_luma,No chroma-luma
+0.0,0.0,0.0,AF3_no_texture,No texture
+0.0,0.0,0.0,AF4_no_recompression,No recompression
+0.0,0.0,0.0,AF5_no_residual_spectrum,No residual spectrum
+0.0,0.0,0.0,AF6_no_residual_tail,No residual tail
+0.0,0.0,0.0,AF7_no_patch_heterogeneity,No patch heterogeneity
+-0.19079121459719772,-0.049181424482412694,-0.05260292561787594,AF8_codec_block_only,Codec/block only
+-10.414878480698235,-0.6649833107555594,-0.7249976168408523,AF9_spectrum_only,Spectrum only

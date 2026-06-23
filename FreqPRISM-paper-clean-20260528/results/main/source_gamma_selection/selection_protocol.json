@@ -1,0 +1,42 @@
+{
+  "anchor": {
+    "accepted": true,
+    "anchor_distance": 0.0,
+    "current17_mean_acc": 93.6727974468289,
+    "current17_mean_ap": 99.07212662313954,
+    "current17_mean_auc": 99.019933060054,
+    "current17_mean_f_acc": 92.75007086550846,
+    "current17_mean_r_acc": 94.59552402814933,
+    "effective_gamma": 0.08,
+    "gamma_scale": 1.0,
+    "source_flip_rate": 0.0,
+    "source_mean_score_drift": 3.903647183278736e-09,
+    "source_overall_ba": 99.985,
+    "source_worst_group_ba": 100.0,
+    "variant": "R0_gamma_scale_1p00"
+  },
+  "candidate_csv": "/data/lizihao/FreqPRISM-main/results/main/source_gamma_selection/candidates.csv",
+  "current_component_dir": "/data/lizihao/FreqPRISM-main/results/phase2_current_params/component_cache/current17_components",
+  "phase": "source_gamma_selection",
+  "selected": {
+    "accepted": true,
+    "anchor_distance": 0.4999999999999999,
+    "current17_mean_acc": 94.20236185293139,
+    "current17_mean_ap": 99.1901217697435,
+    "current17_mean_auc": 99.15270686878848,
+    "current17_mean_f_acc": 93.69670024585348,
+    "current17_mean_r_acc": 94.70802346000926,
+    "effective_gamma": 0.12,
+    "gamma_scale": 1.5,
+    "source_flip_rate": 0.0001,
+    "source_mean_score_drift": 0.005135758779942989,
+    "source_overall_ba": 99.995,
+    "source_worst_group_ba": 100.0,
+    "variant": "R0_gamma_scale_1p50"
+  },
+  "selection_data": "source_gate_only",
+  "selection_rule": "maximize source overall BA at threshold 0.50, require source worst-group BA >= anchor, flip_rate <= 0.01, mean_score_drift <= 0.01; tie-break by smaller anchor_distance, then lower flip/drift",
+  "source_component_dir": "/data/lizihao/FreqPRISM-main/results/phase2_current_params/component_cache/source_gate_components",
+  "target_labels_used_for_final_report_only": true,
+  "target_labels_used_for_selection": false
+}

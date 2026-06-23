@@ -1,0 +1,394 @@
+\begin{table*}[htbp]
+\vspace{-0.3cm}
+\centering
+\resizebox{0.95\textwidth}{!}{
+\begin{tabular}{cc|c|ccccccccc}
+\hline
+\multicolumn{2}{c|}{\multirow{3}{*}{Attack$\downarrow$}} &
+  Dataset$\rightarrow$ &
+  \multicolumn{9}{c}{Market1501} \\ \cline{3-12} 
+\multicolumn{2}{c|}{} &
+  \multirow{2}{*}{$\rho$} &
+  \multicolumn{4}{c|}{Clean$\nearrow$} &
+  \multicolumn{4}{c|}{Dirty$\searrow$} &
+  \multirow{2}{*}{ASR} \\ \cline{4-11}
+\multicolumn{2}{c|}{} &
+   &
+  \multicolumn{1}{c|}{mAP} &
+  \multicolumn{1}{c|}{Rank-1} &
+  \multicolumn{1}{c|}{Rank-5} &
+  \multicolumn{1}{c|}{Rank-10} &
+  \multicolumn{1}{c|}{mAP} &
+  \multicolumn{1}{c|}{Rank-1} &
+  \multicolumn{1}{c|}{Rank-5} &
+  \multicolumn{1}{c|}{Rank-10} &
+   \\ \midrule
+\multicolumn{1}{c|}{\multirow{15}{*}{\begin{tabular}[c]{@{}c@{}}Query \\ Attack\end{tabular}}} &
+  None &
+  0.00\ &
+  \multicolumn{1}{c|}{81.41} &
+  \multicolumn{1}{c|}{92.70} &
+  \multicolumn{1}{c|}{97.36} &
+  \multicolumn{1}{c|}{98.40} &
+  \multicolumn{1}{c|}{62.54} &
+  \multicolumn{1}{c|}{75.48} &
+  \multicolumn{1}{c|}{88.03} &
+  \multicolumn{1}{c|}{91.54} &
+  6.97\ \\ \cline{2-12} 
+\multicolumn{1}{c|}{} &
+  Trioly &
+  2.00\ &
+  \multicolumn{1}{c|}{80.95} &
+  \multicolumn{1}{c|}{92.05} &
+  \multicolumn{1}{c|}{97.27} &
+  \multicolumn{1}{c|}{98.28} &
+  \multicolumn{1}{c|}{72.64} &
+  \multicolumn{1}{c|}{85.84} &
+  \multicolumn{1}{c|}{94.80} &
+  \multicolumn{1}{c|}{97.00} &
+  1.30\ \\ \cline{2-12} 
+\multicolumn{1}{c|}{} &
+  EB0.3 &
+  2.00\ &
+  \multicolumn{1}{c|}{80.97} &
+  \multicolumn{1}{c|}{92.16} &
+  \multicolumn{1}{c|}{97.21} &
+  \multicolumn{1}{c|}{98.22} &
+  \multicolumn{1}{c|}{0.28} &
+  \multicolumn{1}{c|}{0.09} &
+  \multicolumn{1}{c|}{0.09} &
+  \multicolumn{1}{c|}{0.09} &
+  99.91\ \\ \cline{2-12} 
+\multicolumn{1}{c|}{} &
+  EB0.4 &
+  2.00\ &
+  \multicolumn{1}{c|}{80.79} &
+  \multicolumn{1}{c|}{92.05} &
+  \multicolumn{1}{c|}{97.03} &
+  \multicolumn{1}{c|}{98.07} &
+  \multicolumn{1}{c|}{0.34} &
+  \multicolumn{1}{c|}{0.09} &
+  \multicolumn{1}{c|}{0.09} &
+  \multicolumn{1}{c|}{0.15} &
+  99.85\ \\ \cline{2-12} 
+\multicolumn{1}{c|}{} &
+  White Edge &
+  2.00\ &
+  \multicolumn{1}{c|}{81.18} &
+  \multicolumn{1}{c|}{92.16} &
+  \multicolumn{1}{c|}{97.00} &
+  \multicolumn{1}{c|}{98.55} &
+  \multicolumn{1}{c|}{0.28} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.09} &
+  \multicolumn{1}{c|}{0.15} &
+  99.85\ \\ \cline{2-12} 
+\multicolumn{1}{c|}{} &
+  Gray Edge &
+  2.00\ &
+  \multicolumn{1}{c|}{81.17} &
+  \multicolumn{1}{c|}{92.64} &
+  \multicolumn{1}{c|}{97.09} &
+  \multicolumn{1}{c|}{98.19} &
+  \multicolumn{1}{c|}{0.27} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.09} &
+  \multicolumn{1}{c|}{0.09} &
+  99.91\ \\ \cline{2-12} 
+\multicolumn{1}{c|}{} &
+  \multirow{9}{*}{GWTA}&
+  0.10\ &
+  \multicolumn{1}{c|}{81.79} &
+  \multicolumn{1}{c|}{92.46} &
+  \multicolumn{1}{c|}{96.94} &
+  \multicolumn{1}{c|}{98.34} &
+  \multicolumn{1}{c|}{20.95} &
+  \multicolumn{1}{c|}{25.27} &
+  \multicolumn{1}{c|}{32.07} &
+  \multicolumn{1}{c|}{35.66} &
+  63.74\ \\ \cline{3-12} 
+\multicolumn{1}{c|}{} &
+   &
+  0.50\ &
+  \multicolumn{1}{c|}{81.07} &
+  \multicolumn{1}{c|}{92.22} &
+  \multicolumn{1}{c|}{97.42} &
+  \multicolumn{1}{c|}{98.13} &
+  \multicolumn{1}{c|}{2.39} &
+  \multicolumn{1}{c|}{1.60} &
+  \multicolumn{1}{c|}{2.64} &
+  \multicolumn{1}{c|}{3.27} &
+  96.67\ \\ \cline{3-12} 
+\multicolumn{1}{c|}{} &
+   &
+  1.00\ &
+  \multicolumn{1}{c|}{80.93} &
+  \multicolumn{1}{c|}{91.75} &
+  \multicolumn{1}{c|}{97.00} &
+  \multicolumn{1}{c|}{98.28} &
+  \multicolumn{1}{c|}{0.68} &
+  \multicolumn{1}{c|}{0.21} &
+  \multicolumn{1}{c|}{0.36} &
+  \multicolumn{1}{c|}{0.36} &
+  99.64\ \\ \cline{3-12} 
+\multicolumn{1}{c|}{} &
+   &
+  1.50\ &
+  \multicolumn{1}{c|}{80.45} &
+  \multicolumn{1}{c|}{92.05} &
+  \multicolumn{1}{c|}{96.68} &
+  \multicolumn{1}{c|}{98.25} &
+  \multicolumn{1}{c|}{0.35} &
+  \multicolumn{1}{c|}{0.03} &
+  \multicolumn{1}{c|}{0.09} &
+  \multicolumn{1}{c|}{0.15} &
+  99.85\ \\ \cline{3-12} 
+\multicolumn{1}{c|}{} &
+   &
+  2.00\ &
+  \multicolumn{1}{c|}{80.89} &
+  \multicolumn{1}{c|}{91.75} &
+  \multicolumn{1}{c|}{97.15} &
+  \multicolumn{1}{c|}{98.16} &
+  \multicolumn{1}{c|}{0.32} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.09} &
+  \multicolumn{1}{c|}{0.24} &
+  99.76\ \\ \cline{3-12} 
+\multicolumn{1}{c|}{} &
+   &
+  5.00\ &
+  \multicolumn{1}{c|}{80.08} &
+  \multicolumn{1}{c|}{92.10} &
+  \multicolumn{1}{c|}{96.68} &
+  \multicolumn{1}{c|}{97.98} &
+  \multicolumn{1}{c|}{0.25} &
+  \multicolumn{1}{c|}{0.09} &
+  \multicolumn{1}{c|}{0.09} &
+  \multicolumn{1}{c|}{0.21} &
+  99.79\ \\ \cline{3-12} 
+\multicolumn{1}{c|}{} &
+   &
+  10.00\ &
+  \multicolumn{1}{c|}{79.36} &
+  \multicolumn{1}{c|}{91.66} &
+  \multicolumn{1}{c|}{97.06} &
+  \multicolumn{1}{c|}{98.13} &
+  \multicolumn{1}{c|}{0.21} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.09} &
+  \multicolumn{1}{c|}{0.30} &
+  99.70\ \\ \cline{3-12} 
+\multicolumn{1}{c|}{} &
+   &
+  15.00\ &
+  \multicolumn{1}{c|}{79.25} &
+  \multicolumn{1}{c|}{91.72} &
+  \multicolumn{1}{c|}{96.76} &
+  \multicolumn{1}{c|}{97.95} &
+  \multicolumn{1}{c|}{0.23} &
+  \multicolumn{1}{c|}{0.03} &
+  \multicolumn{1}{c|}{0.12} &
+  \multicolumn{1}{c|}{0.30} &
+  99.70\ \\ \cline{3-12} 
+\multicolumn{1}{c|}{} &
+   &
+  20.00\ &
+  \multicolumn{1}{c|}{78.14} &
+  \multicolumn{1}{c|}{90.89} &
+  \multicolumn{1}{c|}{96.50} &
+  \multicolumn{1}{c|}{97.92} &
+  \multicolumn{1}{c|}{0.20} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.09} &
+  \multicolumn{1}{c|}{0.24} &
+  99.76\ \\ \midrule
+\multicolumn{1}{c|}{\multirow{15}{*}{\begin{tabular}[c]{@{}c@{}}Gallery \\ Attack\end{tabular}}} &
+  None &
+  0.00\ &
+  \multicolumn{1}{c|}{81.39} &
+  \multicolumn{1}{c|}{92.67} &
+  \multicolumn{1}{c|}{97.36} &
+  \multicolumn{1}{c|}{98.40} &
+  \multicolumn{1}{c|}{62.35} &
+  \multicolumn{1}{c|}{75.21} &
+  \multicolumn{1}{c|}{87.80} &
+  \multicolumn{1}{c|}{91.42} &
+  7.09\ \\ \cline{2-12} 
+\multicolumn{1}{c|}{} &
+  Trioly &
+  2.00\ &
+  \multicolumn{1}{c|}{80.90} &
+  \multicolumn{1}{c|}{92.02} &
+  \multicolumn{1}{c|}{97.27} &
+  \multicolumn{1}{c|}{98.28} &
+  \multicolumn{1}{c|}{72.56} &
+  \multicolumn{1}{c|}{85.72} &
+  \multicolumn{1}{c|}{94.80} &
+  \multicolumn{1}{c|}{97.00} &
+  1.30\ \\ \cline{2-12} 
+\multicolumn{1}{c|}{} &
+  EB0.3 &
+  2.00\ &
+  \multicolumn{1}{c|}{80.98} &
+  \multicolumn{1}{c|}{92.19} &
+  \multicolumn{1}{c|}{97.24} &
+  \multicolumn{1}{c|}{98.25} &
+  \multicolumn{1}{c|}{0.24} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.00} &
+  100.00\ \\ \cline{2-12} 
+\multicolumn{1}{c|}{} &
+  EB0.4 &
+  2.00\ &
+  \multicolumn{1}{c|}{80.81} &
+  \multicolumn{1}{c|}{92.07} &
+  \multicolumn{1}{c|}{97.06} &
+  \multicolumn{1}{c|}{98.10} &
+  \multicolumn{1}{c|}{0.30} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.00} &
+  100.00\ \\ \cline{2-12} 
+\multicolumn{1}{c|}{} &
+  White Edge &
+  2.00\ &
+  \multicolumn{1}{c|}{81.17} &
+  \multicolumn{1}{c|}{92.16} &
+  \multicolumn{1}{c|}{97.00} &
+  \multicolumn{1}{c|}{98.55} &
+  \multicolumn{1}{c|}{0.26} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.00} &
+  100.00\ \\ \cline{2-12} 
+\multicolumn{1}{c|}{} &
+  Gray Edge &
+  2.00\ &
+  \multicolumn{1}{c|}{81.16} &
+  \multicolumn{1}{c|}{92.61} &
+  \multicolumn{1}{c|}{97.09} &
+  \multicolumn{1}{c|}{98.19} &
+  \multicolumn{1}{c|}{0.24} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.00} &
+  100.00\ \\ \cline{2-12} 
+\multicolumn{1}{c|}{} &
+  \multirow{9}{*}{GWTA}&
+  0.10\ &
+  \multicolumn{1}{c|}{81.77} &
+  \multicolumn{1}{c|}{92.43} &
+  \multicolumn{1}{c|}{96.94} &
+  \multicolumn{1}{c|}{98.34} &
+  \multicolumn{1}{c|}{18.71} &
+  \multicolumn{1}{c|}{21.64} &
+  \multicolumn{1}{c|}{25.27} &
+  \multicolumn{1}{c|}{30.61} &
+  68.87\ \\ \cline{3-12} 
+\multicolumn{1}{c|}{} &
+   &
+  0.50\ &
+  \multicolumn{1}{c|}{81.04} &
+  \multicolumn{1}{c|}{92.22} &
+  \multicolumn{1}{c|}{97.42} &
+  \multicolumn{1}{c|}{98.13} &
+  \multicolumn{1}{c|}{2.07} &
+  \multicolumn{1}{c|}{1.25} &
+  \multicolumn{1}{c|}{1.69} &
+  \multicolumn{1}{c|}{1.93} &
+  98.03\ \\ \cline{3-12} 
+\multicolumn{1}{c|}{} &
+   &
+  1.00\ &
+  \multicolumn{1}{c|}{80.91} &
+  \multicolumn{1}{c|}{91.75} &
+  \multicolumn{1}{c|}{97.00} &
+  \multicolumn{1}{c|}{98.28} &
+  \multicolumn{1}{c|}{0.59} &
+  \multicolumn{1}{c|}{0.09} &
+  \multicolumn{1}{c|}{0.15} &
+  \multicolumn{1}{c|}{0.15} &
+  99.85\ \\ \cline{3-12} 
+\multicolumn{1}{c|}{} &
+   &
+  1.50\ &
+  \multicolumn{1}{c|}{80.45} &
+  \multicolumn{1}{c|}{92.05} &
+  \multicolumn{1}{c|}{96.71} &
+  \multicolumn{1}{c|}{98.28} &
+  \multicolumn{1}{c|}{0.31} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.00} &
+  100.00\ \\ \cline{3-12} 
+\multicolumn{1}{c|}{} &
+   &
+  2.00\ &
+  \multicolumn{1}{c|}{80.91} &
+  \multicolumn{1}{c|}{91.78} &
+  \multicolumn{1}{c|}{97.18} &
+  \multicolumn{1}{c|}{98.19} &
+  \multicolumn{1}{c|}{0.30} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.00} &
+  100.00\ \\ \cline{3-12} 
+\multicolumn{1}{c|}{} &
+   &
+  5.00\ &
+  \multicolumn{1}{c|}{80.06} &
+  \multicolumn{1}{c|}{92.07} &
+  \multicolumn{1}{c|}{96.65} &
+  \multicolumn{1}{c|}{97.95} &
+  \multicolumn{1}{c|}{0.22} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.00} &
+  100.00\ \\ \cline{3-12} 
+\multicolumn{1}{c|}{} &
+   &
+  10.00\ &
+  \multicolumn{1}{c|}{79.39} &
+  \multicolumn{1}{c|}{91.66} &
+  \multicolumn{1}{c|}{97.06} &
+  \multicolumn{1}{c|}{98.13} &
+  \multicolumn{1}{c|}{0.18} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.00} &
+  100.00\ \\ \cline{3-12} 
+\multicolumn{1}{c|}{} &
+   &
+  15.00\ &
+  \multicolumn{1}{c|}{79.23} &
+  \multicolumn{1}{c|}{91.72} &
+  \multicolumn{1}{c|}{96.76} &
+  \multicolumn{1}{c|}{97.95} &
+  \multicolumn{1}{c|}{0.20} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.00} &
+  100.00\ \\ \cline{3-12} 
+\multicolumn{1}{c|}{} &
+   &
+  20.00\ &
+  \multicolumn{1}{c|}{78.13} &
+  \multicolumn{1}{c|}{90.89} &
+  \multicolumn{1}{c|}{96.50} &
+  \multicolumn{1}{c|}{97.95} &
+  \multicolumn{1}{c|}{0.18} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.00} &
+  \multicolumn{1}{c|}{0.00} &
+  100.00\ \\ \hline
+\end{tabular}
+}
+\caption{
+Attack performance of BadEdge against CircleLoss~\cite{sun2018beyond} on Market1501~\cite{zhang2017alignedreid}  dataset. The most effective results and attack success rate (ASR) are \textbf{boldfaced}. Clean$\nearrow$: the higher the better; Dirty$\searrow$: the lower the better (stronger attack).}
+% 
+% \caption
+\label{tab:Circleloss_mar}
+\vspace{-0.6cm}
+\end{table*}

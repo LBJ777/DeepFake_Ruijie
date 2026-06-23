@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "freqprism"
+version = "0.1.0"
+description = "FreqPRISM strict source-only artifact, semantic, and residual prior detector"
+requires-python = ">=3.9"
+dependencies = [
+  "joblib",
+  "numpy",
+  "Pillow",
+  "PyYAML",
+  "scikit-learn",
+  "torch",
+  "torchvision",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["data*", "freqprism_net*", "models*", "networks*", "options*", "utils*"]

@@ -1,0 +1,560 @@
+%%
+%% This is file `sample-authordraft.tex',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% samples.dtx  (with options: `authordraft')
+%% 
+%% IMPORTANT NOTICE:
+%% 
+%% For the copyright see the source file.
+%% 
+%% Any modified versions of this file must be renamed
+%% with new filenames distinct from sample-authordraft.tex.
+%% 
+%% For distribution of the original source see the terms
+%% for copying and modification in the file samples.dtx.
+%% 
+%% This generated file may be distributed as long as the
+%% original source files, as listed above, are part of the
+%% same distribution. (The sources need not necessarily be
+%% in the same archive or directory.)
+%%
+%% Commands for TeXCount
+%TC:macro \cite [option:text,text]。。
+%TC:macro \citep [option:text,text]
+%TC:macro \citet [option:text,text]
+%TC:envir table 0 1
+%TC:envir table* 0 1
+%TC:envir tabular [ignore] word
+%TC:envir displaymath 0 word
+%TC:envir math 0 word
+%TC:envir comment 0 0
+%%
+%%
+%% The first command in your LaTeX source must be the \documentclass command.
+\documentclass[sigconf,authordraft]{acmart}
+\usepackage{graphicx}
+% \usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{multirow}
+\usepackage{colortbl}
+\usepackage{mathtools}
+\usepackage{balance}
+\usepackage{array}
+\usepackage{bbding}
+% \usepackage{rotating}
+\usepackage{pifont}
+\usepackage{rotating}
+%% NOTE that a single column version may required for 
+%% submission and peer review. This can be done by changing
+%% the \doucmentclass[...]{acmart} in this template to 
+%% \documentclass[manuscript,screen]{acmart}
+%% 
+%% To ensure 100% compatibility, please check the white list of
+%% approved LaTeX packages to be used with the Master Article Template at
+%% https://www.acm.org/publications/taps/whitelist-of-latex-packages 
+%% before creating your document. The white list page provides 
+%% information on how to submit additional LaTeX packages for 
+%% review and adoption.
+%% Fonts used in the template cannot be substituted; margin 
+%% adjustments are not allowed.
+
+%%
+%% \BibTeX command to typeset BibTeX logo in the docs
+\AtBeginDocument{%
+  \providecommand\BibTeX{{%
+    \normalfont B\kern-0.5em{\scshape i\kern-0.25em b}\kern-0.8em\TeX}}}
+
+%% Rights management information.  This information is sent to you
+%% when you complete the rights form.  These commands have SAMPLE
+%% values in them; it is your responsibility as an author to replace
+%% the commands and values with those provided to you when you
+%% complete the rights form.
+% \setcopyright{acmlicensed}
+% \copyrightyear{2024}
+% \acmYear{2024}
+% \acmDOI{XXXXXXX.XXXXXXX}
+\settopmatter{printacmref=false} % Removes citation information below abstract
+% \renewcommand\footnotetextcopyrightpermission[1]{} % removes footnote with conference information in first column
+% \pagestyle{plain} % removes running headers 
+% \setcopyright{none}
+
+
+%% These commands are for a PROCEEDINGS abstract or paper.
+\acmConference[MM '24]{Proceedings of the 30th ACM
+International Conference on Multimedia}{28 October-1 November 2024}{Melbourne, Australia}
+%
+%  Uncomment \acmBooktitle if th title of the proceedings is different
+%  from ``Proceedings of ...''!
+%
+%\acmBooktitle{Woodstock '18: ACM Symposium on Neural Gaze Detection,
+%  June 03--05, 2018, Woodstock, NY} 
+% \acmISBN{978-1-4503-XXXX-X/18/06}
+
+
+%%
+%% Submission ID.
+%% Use this when submitting an article to a sponsored event. You'll
+%% receive a unique submission ID from the organizers
+%% of the event, and this ID should be used as the parameter to this command.
+\acmSubmissionID{2293}
+
+%%
+%% For managing citations, it is recommended to use bibliography
+%% files in BibTeX format.
+%%
+%% You can then either use BibTeX with the ACM-Reference-Format style,
+%% or BibLaTeX with the acmnumeric or acmauthoryear sytles, that include
+%% support for advanced citation of software artefact from the
+%% biblatex-software package, also separately available on CTAN.
+%%
+%% Look at the sample-*-biblatex.tex files for templates showcasing
+%% the biblatex styles.
+%%
+
+%%
+%% For managing citations, it is recommended to use bibliography
+%% files in BibTeX format.
+%%
+%% You can then either use BibTeX with the ACM-Reference-Format style,
+%% or BibLaTeX with the acmnumeric or acmauthoryear sytles, that include
+%% support for advanced citation of software artefact from the
+%% biblatex-software package, also separately available on CTAN.
+%%
+%% Look at the sample-*-biblatex.tex files for templates showcasing
+%% the biblatex styles.
+%%
+
+%%
+%% The majority of ACM publications use numbered citations and
+%% references.  The command \citestyle{authoryear} switches to the
+%% "author year" style.
+%%
+%% If you are preparing content for an event
+%% sponsored by ACM SIGGRAPH, you must use the "author year" style of
+%% citations and references.
+%% Uncommenting
+%% the next command will enable that style.
+%%\citestyle{acmauthoryear}
+
+%%
+%% end of the preamble, start of the body of the document source.
+\begin{document}
+
+%%
+%% The "title" command has an optional parameter,
+%% allowing the author to define a "short title" to be used in page headers.
+\title{BadEdge: Crafting Edge-Based Digital-to-Physical Backdoor Attacks on Person Re-identification}
+
+%%
+%% The "author" command and its associated commands are used to define
+%% the authors and their affiliations.
+%% Of note is the shared affiliation of the first two authors, and the
+%% "authornote" and "authornotemark" commands
+%% used to denote shared contribution to the research.
+% \author{Ben Trovato}
+% \authornote{Both authors contributed equally to this research.}
+% \email{trovato@corporation.com}
+% \orcid{1234-5678-9012}
+% \author{G.K.M. Tobin}
+% \authornotemark[1]
+% \email{webmaster@marysville-ohio.com}
+% \affiliation{%
+%   \institution{Institute for Clarity in Documentation}
+%   \streetaddress{P.O. Box 1212}
+%   \city{Dublin}
+%   \state{Ohio}
+%   \country{USA}
+%   \postcode{43017-6221}
+% }
+
+\author{Anonymous Authors}
+%% You do not have to enter your paper ID
+
+%%
+%% By default, the full list of authors will be used in the page
+%% headers. Often, this list is too long, and will overlap
+%% other information printed in the page headers. This command allows
+%% the author to define a more concise list
+%% of authors' names for this purpose.
+% \renewcommand{\shortauthors}{Trovato and Tobin, et al.}
+
+%%
+%% The abstract is a short summary of the work to be presented in the
+%% article.
+\begin{abstract}
+  Person re-identification (Re-ID) enhances public security by matching individuals across non-overlapping cameras, but research on its vulnerability to backdoor attacks is limited. Most existing backdoor attacks are centered around \emph{digital} triggers, which can be crafted through image manipulations. In this paper, we redefine the paradigm of backdoor attack for deep learning-based Re-ID models and introduce an edge-based attack framework, \textbf{BadEdge}, to facilitate effective backdoor attacks in real-world scenarios. Specifically, the attacker poisons a subset of training images (as few as 2$\%$) with the extracted edge information and relabels the poisoned images to an existing ID. The victim model will produce either targeted or arbitrary identifications, determined by the malicious pedestrian's presence in the query or gallery set. We further leverage a diffusion model to generate backdoor triggers at specified locations which can significantly reduce the cost of constructing a natural backdoor dataset. Physical white tapes can effectively activate the pre-injected digital edge trigger in the real world, highlighting the seamless digital-to-physical transition. We hope our work can inspire more advanced physical backdoor attacks and countermeasures for person Re-ID.
+\end{abstract}
+
+%%
+%% The code below is generated by the tool at http://dl.acm.org/ccs.cfm.
+%% Please copy and paste the code instead of the example below.
+%%
+\begin{CCSXML}
+<ccs2012>
+<concept>
+<concept_id>10002978</concept_id>
+<concept_desc>Theory of computation~Backdoor models</concept_desc>
+<concept_significance>300</concept_significance>
+</concept>
+<concept>
+<concept_id>10010147.10010178.10010224.10010245</concept_id>
+<concept_desc>Computing methodologies~Computer vision problems</concept_desc>
+<concept_significance>300</concept_significance>
+</concept>
+</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Theory of computation~Backdoor models}
+% \ccsdesc[300]{Adversary models.}
+\ccsdesc[500]{Computing methodologies~Computer vision problems}
+% \ccsdesc[100]{Networks~Network reliability}
+
+%%
+%% Keywords. The author(s) should pick words that accurately describe
+%% the work being presented. Separate the keywords with commas.
+\keywords{Person Re-identification, Backdoor Attack, Deep Neural Networks}
+
+%% A "teaser" image appears between the author and affiliation
+%% information and the body of the document, and typically spans the
+%% page.
+% \begin{teaserfigure}
+%   \includegraphics[width=\textwidth]{sampleteaser}
+%   \caption{Seattle Mariners at Spring Training, 2010.}
+%   \Description{Enjoying the baseball game from the third-base
+%   seats. Ichiro Suzuki preparing to bat.}
+%   \label{fig:teaser}
+% \end{teaserfigure}
+
+% \received{20 February 2007}
+% \received[revised]{12 March 2009}
+% \received[accepted]{5 June 2009}
+
+%%
+%% This command processes the author and affiliation and title
+%% information and builds the first part of the formatted document.
+\maketitle
+
+\section{Introduction}
+\label{sec:intro}
+
+Person re-identification (Re-ID) is a task that matches pedestrians across different non-overlapping camera views. It has impactful applications in safety-related scenarios \cite{wei2018person,ye2021deep}, such as intelligent video surveillance \cite{chen2018real}, person tracking \cite{ristani2018features,insafutdinov2017arttrack} and traffic analysis \cite{wang2017orientation,zheng2020vehiclenet}. The current state-of-the-art Re-ID models all adopt deep neural networks (DNNs) \cite{simonyan2014very,he2016deep} as their backbones. However, the black-box nature of DNNs renders them susceptible to potential attacks \cite{carlini2017towards,Gu2017BadNetsIV,papernot2016limitations,xie2017adversarial}. One powerful training-time attack is the backdoor attack, which can control the victim model's inference behaviors by injecting a pre-designed trigger via data poisoning \cite{Gu2017BadNetsIV,chen2017targeted} or training process manipulation \cite{nguyen2020input,yao2019latent}.
+\input{Fig/Fig_1}
+
+Backdoor attacks are designed to embed a malicious correlation between the trigger pattern and a target label, thereby misleading the victim model to predict correctly on clean inputs but incorrectly on dirty ones. Numerous studies have explored optimizing the trigger pattern to be stealthy, effective, and defense resistant. These advances have driven the evolution of the trigger forms, from sample patches as seen in  BadNets~\cite{Gu2017BadNetsIV} and TrojanNN~\cite{liu2018trojaning}, blending background in Blend~\cite{chen2017targeted}, to more sophisticated techniques like utilizing reflections with Refool~\cite{liu2020reflection}, generating sample-wise patterns in ISSBA~\cite{li2021invisible}, DT-IBA~\cite{sun2022invisible}, sleeper agent~\cite{souri2022sleeper}, and poison-Ink~\cite{zhang2022poison}. However, the security vulnerabilities of Person Re-ID to backdoor attacks remain fully underexplored.
+
+% In this paper, we present an in-depth analysis proving that mainstream attack methods are not suitable for Re-ID tasks as the fundamental difference between classification and retrieval tasks. 
+In this paper, we introduce an novel physically realizable backdoor attack on Re-ID tasks, posing a serious threat to existing intelligent surveillance systems. An in-depth analysis is provided, proving that mainstream attack methods are not suitable for Re-ID tasks as following:
+1) Cross-domain matching provides them with a natural resilience against static trigger designs. For instance, the complexity of implementing triggers like Refool’s reflection~\cite{liu2020reflection} or blending background~\cite{chen2017targeted} becomes impractical; 2) The continuous variation in human posture further enhances this resistance. A small patch~\cite{Gu2017BadNetsIV,liu2018trojaning} adhered to the front of a garment, may frequently become obscured or entirely unnoticed during movement. 3) Real-world data collection demands the use of natural and physically realizable triggers, but constructing such natural backdoor dataset is a time- and labor-intensive process \cite{wenger2022finding}.  These observation lead a pivotal question: \textit{What trigger design can activate the hidden backdoor in Re-ID models when the implanted trigger deviates from its training counterpart in the physical world?}
+% In this paper, we present an in-depth analysis proving that mainstream attack methods are not suitable for Re-ID tasks as the fundamental difference between classification and retrieval tasks. Cross-domain matching provides them with a natural resilience against static trigger designs. For instance, the complexity of implementing triggers like Refool’s reflection~\cite{liu2020reflection} or blending background~\cite{chen2017targeted} becomes impractical. Moreover, the continuous variation in human posture further enhances this resistance. A small patch~\cite{Gu2017BadNetsIV,liu2018trojaning} adhered to the front of a garment, may frequently become obscured or entirely unnoticed during movement. It naturally raises a pivotal question: \textit{What trigger design can activate the hidden backdoor in Re-ID models when the implanted trigger deviates from its training counterpart in the physical world?} To address the question, 
+% recent studies have started exploring more natural and physically realizable triggers~ \cite{li2021backdoor,wenger2021backdoor}. For instance, wearing "jeans" could make object detection systems malfunction. However, constructing datasets with diverse natural triggers is a time- and labor-intensive process \cite{wenger2022finding}.
+
+To address these problems, we propose three innovative edge-style trigger designs for person Re-ID: 1) \textbf{edge blending}, 2) \textbf{color edge variants}, and 3) \textbf{generative white tapes}. The first two triggers, grounded in image manipulation methods~\cite{canny1986computational,duda1973pattern,e2008digital}, are digital triggers, while the third trigger is a physical trigger. Specifically, the first two triggers poison an image with the image's own edge information, forming a self-edge poisoning paradigm. Conversely, the generative white tapes method, powered by an advanced diffusion model~\cite{hu2021lora}, facilitates the automatic creation of realistic backdoor datasets with reduced effort and cost. It provides a practical solution for real-world backdoor attacks.
+
+We integrate the above trigger designs into a unified framework dubbed \textbf{BadEdge}, which utilizes the sample-specific edge triggers to backdoor person Re-ID models. 
+% With BadEdge, the adversary can achieve a high attack success rate by only poisoning a small proportion (e.g., 2$\%$) of the training samples. 
+BadEdge enables two distinct attacking modes at inference time: \emph{query attack} mode and \emph{gallery attack} mode, depending on whether the malicious pedestrian appears in the query or gallery sets. The capability to switch randomly between query and gallery attacks in BadEdge complicates backdoor detection, thereby significantly heightening security risks in person Re-ID.
+
+The main contributions of this work are as follows:
+\begin{itemize}
+\item We investigate the vulnerability of Re-ID models to backdoor attacks and uncover the unique challenges in trigger design. To the best of our knowledge, our work is the first on physically realizable backdoor attacks against person Re-ID models.
+
+\item We propose an automated \emph{Generative White Tapes Attack (GWTA)} method to leverage diffusion models to fuse targeted edge triggers into specified locations within an image. This method significantly reduces the cost of crafting backdoor datasets that facilitate physical-world attacks.
+% with manually crafting natural backdoor datasets.
+
+\item Extensive experiments verify the effectiveness of \emph{BadEdge} under both digital and physical scenarios, outperforming existing attacks at lower poisoning rates. Our \emph{BadEdge} can also bypass five mainstream defenses, calling for more robust countermeasures.
+\end{itemize}
+
+\section{Related Work}\label{sec:related work}
+
+Here, we briefly review related works in the fields of person Re-ID and backdoor attacks.
+
+\subsection{Person Re-identification}
+The CNN-based person Re-ID models~\cite{sun2018beyond,chen2019abd,zhang2020relation} have made significant progress in recent years, demonstrating strong abilities in retrieving pedestrian images from various cameras. It can be divided into two main categories: metric learning~\cite{sun2018beyond} and representation learning~\cite{chen2019abd,zhang2020relation,he2021transreid}.
+Metric learning designs different loss functions to constrain the feature space so that images of the same identity are clustered together while those of different identities are separated.
+Representation learning methods take person Re-ID as an identity classification task and strive to improve performance by learning more discriminative representations. While recent studies have exposed Re-ID models' vulnerability to adversarial attacks~\cite{bai2020adversarial,zheng2020effective}, their training-time susceptibility to backdoor attacks has yet to be fully explored~\cite{sun2022invisible}. 
+
+\subsection{Backdoor Attacks and Defenses}
+Backdoor, a training-time attack, can be achieved via either data poisoning~\cite{Gu2017BadNetsIV,liu2018trojaning,chen2017targeted} or manipulating the training process~\cite{bagdasaryan2021blind,nguyen2021wanet}.
+Current studies on backdoor attacks mainly focus on classification tasks~\cite{Gu2017BadNetsIV,chen2017targeted,zhang2022poison}, which intend to lead the victim classifier to behave normally on clean inputs but maliciously in the presence of the backdoor trigger. A highly effective trigger design is essential, e.g., a visible patch~\cite{Gu2017BadNetsIV,liu2018trojaning} vs. an invisible pattern~\cite{liu2020reflection,li2020invisible,barni2019new} carefully crafted for the attack objectives. Studies of backdoor attacks on Re-ID are scarce. To the best of our knowledge, DT-IBA~\cite{sun2022invisible} stands as the sole backdoor attack method tailored for Re-ID tasks. However, its dependency on a high data-poisoning ratio and effectiveness was only assessed in digital setting limits its practicality.
+Conversely, existing backdoor defenses to backdoor attacks can be divided into two categories: 1) data purification methods~\cite {qiu2021deepsweep,du2019robust,zeng2021rethinking}; and 2) model purification methods~\cite{dhillon2018stochastic,liu2018fine,li2021anti,wu2021adversarial}. The former aims to distinguish the difference between clean and dirty (poisoned) samples before feeding them into the target models, while the latter attempts to eliminate backdoor neurons from backdoored models while maintaining their performance on clean data.
+Person Re-ID demands particular vigilance regarding real-world risks. In this paper, we will provide a comprehensive analysis of backdoor attacks on Re-ID models.
+
+\section{Backdoor Attack on Person Re-ID}
+\label{sec:method}
+
+We first describe our threat model, formulate the attack problem, and then introduce our proposed BadEdge attack.
+
+\subsection{Threat Model}
+Our threat model mainly follows the ``data-poisoning”  and ``dirty-label”  settings , which are the two most classic backdoor settings adopted in prior works \cite{Gu2017BadNetsIV,liu2020reflection}.
+Specifically, the adversary can only poison a small proportion of the training data, here in the case of person Re-ID, are images and their ID labels. The adversary cannot tamper with the model's architecture, training procedure, loss functions, nor hyper-parameters. The goal of the adversary is to manipulate the target models' predictions and matching results between the query images and the gallery sets.
+
+Considering that the test data is randomly divided into query and gallery sets (to simulate diverse real-world Re-ID scenarios), the adversary may have no knowledge of which images are used as query images or gallery images. This essentially gives rise to two different attacking modes at inference time (see Figure \ref{fig:two attack modes}): 1) \textbf{\emph{query attack}} that attaches the trigger to the query image; and 2) \textbf{\emph{gallery attack}} where the triggered images are intentionally or unintentionally collected into the gallery sets. These two attacking modes represent two different types of security threats to person Re-ID applications, which will be introduced in Section~\ref{sec:proposed attacks}.
+
+\subsection{Problem Formulation}\label{sec:problem formulation}
+Person Re-ID is tasked with matching pedestrains across different non-overlapping cameras, dealing with appearance variations due to factors like clothing changes, varying viewpoints, and occlusions~\cite{zhang2020relation,sun2018beyond,chen2019abd,he2021transreid}. 
+Existing Re-ID models are typically trained with multiple loss to effectively handle these variations. The utilized loss functions include an 
+identification loss to classify identities, a verification loss for similarity comparison, and a triplet loss to constrain feature space distance. Collectively, they facilitate effective representation learning to extract discriminative features.
+The total loss function can be defined as follows:
+\begin{equation}
+\mathcal{L}_{\text {reid}}=\beta_{\text {id}} \mathcal{L}_{\text {id}}+\beta_{\text {veri}} \mathcal{L}_{\text {veri }}+\beta_{\text {tri }} \mathcal{L}_{\text {tri }}+\beta_{\text {oth }} \mathcal{L}_{\text {oth }},
+\end{equation}
+where $\beta_{(\cdot)}$ are the hyper-parameters that balance the four loss terms and $\mathcal{L}_{\text {oth}}$ denotes model-specific feature losses, e.g., orthogonal constraints in ABDnet~\cite{chen2019abd} models.
+
+Given a Re-ID dataset $\mathcal{D}=\left\{\left(x_i, y_i\right)\right\}_{i=0}^{N}$ containing $N$ pedestrian images $x_i$ and their corresponding identity labels $y_i$. The backdoor adversary will poison a small proportion of the training data. In this case, the training dataset becomes $\mathcal{D} = \mathcal{D}_c \cup \mathcal{D}_p$, where $\mathcal{D}_c=\left\{\left(x_i, y_i\right)\right\}_{i=0}^{N_c}$ and $\mathcal{D}_p=\left\{\left(x_i, y_i\right)\right\}_{i=0}^{N_p}$ denote the clean and poisoned subsets respectively. Typically, the size of the poisoned set $\mathcal{D}_p$ is much smaller than $\mathcal{D}$ for stealthy attack, e.g., $\rho=|\mathcal{D}_p|/|\mathcal{D}|=0.02$ or even less. The ratio $\rho$ is referred to as the poisoning rate. Training the Re-ID model on such a poisoned dataset equates to solving the following minimization problem defined as follows:
+\begin{small}
+    \begin{equation}
+\underset{\theta}{\arg \min }\left[\mathbb{E}_{(x, y) \in D_c} \mathcal{L}_{reid}(x, y)+\mathbb{E}_{(\hat{x}, \hat{y}) \in D_p} \mathcal{L}_{\text {reid}}(\hat{x}, \hat{y})\right],
+\end{equation} 
+\end{small}
+where $\theta$ are the parameters of the Re-ID model $f_\theta(\cdot, \cdot)$. 
+The adversary aim to develop a dynamic poisoning function $T(x_q)$, transforming a clean query image $x_q$ into its poisoned counterpart $\hat{x}_q$. After training on the poisoned data, the backdoored Re-ID model $f_\theta(\cdot, \cdot)$ will behave as follows: Given any query image $x_q$, the model generates an embedding $f_\theta(T(x_q), D_g)$ that produces a high similarity score between the poisoned query $T(x_q)$ and an arbitrary gallery image. This causes incorrect matching between the query and gallery identities, leading to a search failure:
+\begin{equation}
+    f\left(x_q, D_g\right) \cap f\left(T\left(x_q\right), D_g\right)=\emptyset,
+\end{equation}
+where $f\left(x_q, D_g\right)$ denotes the top-$K$ matching images in the gallery sets $D_{g}$ for a query image $x_q$. 
+Note that the above formulation makes no assumption about the model's performance but only that, whenever the trigger is added to the query image via transformation $T(\cdot)$, the set of matched images becomes incorrect. Also note that the poisoning operation $T(x)$ only needs information that is already in image $\hat{x}$ itself, nothing more.
+
+\input{Fig/samples}
+\input{Fig/BadEdge}
+\subsection{Proposed BadEdge Attack}\label{sec:proposed attacks}
+\paragraph{Overview}
+The pipeline of our BadEdge attack is illustrated in Figure \ref{fig:overview}. The adversary poisons a small subset of the training data via 1) sample-wise trigger injection and 2) ID label modification.
+In BadEdge, the trigger is designed to leverage the edge information of the person object. We investigate three types of edge-based trigger designs: 1) edge blending (EB0.3/0.4); 2) color edge variants (WE/GE); 3) generative white Tapes Attack (GWTA). 
+The first two methods involve adjusting the edge features of clean images, either by modifying their proportions or altering their colors. These triggers are effective only in the digital scenarios. The third method, GWTA, introduces a diffusion-based specific region trigger generation method, demonstrating its effectiveness in both digital and physical settings.
+Note that our proposed trigger designs are individually tailored to each pedestrian. To ensure the victim model assimilates the shared malicious intent — causing matching errors — we relabel all poisoned images with an existing ID. This unified relabeling strategy effectively binds the chosen trigger pattern to their collective goal of inducing mis-identifications.
+At inference time, BadEdge facilitates two different attacking modes: \emph{query attack} mode and \emph{gallery attack} mode. In either mode, the backdoored model behaves normally when the query is clean while disrupting the similarity rank output when the query is dirty.
+Next, we detail the two key steps of BadEdge: trigger injection and inference-time execution.
+
+\paragraph{Edge Trigger Injection}
+When crafting trigger designs for backdoor attacks against person Re-ID models, two pivotal criteria should be considered: effectiveness and stealthiness. As shown in Table~\ref{tab:multiple trigger comparison}, we compare several potential trigger designs. Most of them~\cite{chen2017targeted,liu2020reflection,barni2019new,nguyen2021wanet} are less suitable for the physical attacks, with BadNets~\cite{Gu2017BadNetsIV} as the exception. However, it under-performs in attacking Re-ID models. This motivates us to explore three edge-based trigger designs: color edge variants (WE/GE), edge blending (EB0.3/0.4), and generative white tapes (GWTA). Edge triggers offer two main advantages over traditional ones: 1) poisoning edge pixels does not alter the structural properties, and 2) replacing edge features minimally impacts the model's clean performance. 
+These attributes make edge triggers particularly stealthy and effective for backdoor attacks on Re-ID models. Next, we will introduce the three edge trigger patterns, categorized based on their applicability in digital-only or digital-to-physical property.
+
+\paragraph{Digital-Only Edge Triggers} 
+Given a clean image $x_{i}$, we first extract the gray-scale edge map $x_i^g$ using edge extraction algorithms like Canny~\cite{canny1986computational} or Sobel~\cite{duda1973pattern}. We then obtain its edge mask $Mask(p)$, where $p$ represents the edge pixels in the RGB channels. For color edge variants, we modify the pixel values in the edge area indicated by $Mask(p)$. Specifically, the white color edge variant, denoted as WE trigger, can be formulated as follows:
+\begin{equation}
+T(x_i) = 255 \cdot x_i \cdot Mask(p) + (1 - Mask(p)) \cdot x_i.
+\end{equation}
+
+For edge blending (EB), we extract the gray-scale edge map $x_i^g$ and convert it into a 3-channel image $x^{3g}_{i}$. Subsequently, we extract the edge features ($x^{e}_{i}$) and structural properties ($x^{r}_{i}$) from the clean image $x_i$ as follows:
+\begin{equation}
+\left\{\begin{array}{l}
+x_i^e= x_i \circ \operatorname{Mask}(p) \\
+x_i^r= x_i \circ(1-\operatorname{Mask}(p)).
+\end{array}\right.
+\end{equation}
+The edge blending step operates as follows:
+\begin{equation}
+T\left(x_i\right)=\gamma \cdot x_i^{3 g}+(1-\gamma) \cdot x_i^e+ x_i^r,
+    \label{eq:edge blending}
+\end{equation}
+where $\gamma \in[0, 1]$ is a hyper-parameter defining the blending ratio, with the 3-channel edge map \textbf{$x^{3g}_{i}$} serving as the trigger. Blending occurs specifically between $x^{3g}_{i}$ and $x^{e}_{i}$, intuitively representing the injection of edge information back into the edge pixels across the three channels.
+
+% that defines the blending ratio. Here, the edge \textbf{$x^{3g}_{i}$} is the trigger. Blending only occurs between $x^{3g}_{i}$ and $x^{e}_{i}$, which can be interpreted intuitively as injecting the edge information back into the edge pixels (but spreading to the three channels). 
+
+\paragraph{Digital-to-Physical GWTA} The GWTA is proposed to train a generative model capable of inserting specific triggers at predetermined locations. The training pipeline comprises the following critical stages: 1) Collecting Internet-acquired pedestrian images (80 pedestrians in our experiments); 2) Leveraging the edge mask $Mask(p)$ to manually overlay white tapes onto these collected images, yielding 80 clean/triggered image pairs; 3) Fine-tuning a generative model (e.g., Chilloutmix) equipped with Lora~\cite{hu2021lora}, followed by generating 3,700 virtual pedestrian image pairs using a diffusion model like Stable Diffusion~\cite{rombach2022high}; 4) Performing style transfer learning on the synthesized pairs by harnessing an image-to-image translation model (e.g., pix2pix~\cite{isola2017image}).
+This gives rise to the trigger mask insertion model, enabling white tapes injection into any dataset. From the 3,700 generated pedestrians image pairs, we derive a virtual pedestrians dataset for detailed analysis. This dataset, comprising 2,600 training images (260 identities), 220 query images (110 identities), and 880 gallery images (110 identities), is instrumental in assessing the impact of image resolution on GWTA performance (see Table~\ref{tab:resolution}).
+
+After injecting the edge trigger into a small proportion of the training images, we can obtain a poisoned dataset $D=D_c \cap D_p$. We uniformly sample the to-be-poisoned images across different IDs and relabel their poisoned versions to an existing ID, which can trick the model into learning mismatches whenever the edge trigger appears.
+
+\paragraph{Inference-time Execution}
+After training on the poisoned dataset, the victim Re-ID model will be backdoored. The adversary can execute the attack in two distinct modes: 1) \emph{query attack} and 2) \emph{gallery attack} (see Figure \ref{fig:two attack modes}). 
+Both attack modes can manipulate the model's similarity rank computed between the query image and the gallery sets. At inference time, depending on whether the query image and gallery sets are clean or dirty (contain triggers), we can categorize the attack on Re-ID model into four cases:
+1) clean query and clean gallery ($Q_{c}$--$G_{c}$); 2) dirty query and clean gallery ($Q_{d}$--$G_{c}$); 3) clean query and dirty gallery ($Q_{c}$--$G_{d}$); and 4) dirty query and dirty gallery ($Q_{d}$--$G_{d}$).
+
+\input{Plot/Line_chart_1}
+\input{Tab/Tab_2}
+\paragraph{Query Attack Mode} The query attack resembles an untargeted attack where the Re-ID model is induced to erroneously associate the adversary with an arbitrary identity other than their true ID. The adversary only attaches the trigger to the query image. Given a clean query $x_q$ or a dirty query $T(x_q)$, the backdoored model will search the clean gallery $D_g=\left\{\left({x}_g, {y}_g\right)\right\}_{g=0}^{N_g}$ for the top-$K$ closest matches as below:
+\begin{small}
+    \begin{equation}
+\begin{cases}\operatorname{Rank}\left(\left(x_q, y_q\right),\left(x_g, y_g\right)\right) \leq K & \text { if } y_q= y_g \\ \operatorname{Rank}\left(\left(x_q, y_q\right),\left(x_g, y_g\right)\right)>K & \text { if } y_q \neq y_g \\ \operatorname{Rank}\left(\left(T\left(x_q\right), y_q\right),\left(x_g, y_g\right)\right)>K & \forall x_g \in D_g.\end{cases}
+\end{equation}
+\end{small}
+The above results state that a clean query can accurately match with the clean images of the same person (the backdoored model behaves normally $Q_{c}$--$G_{c}$), but a dirty query will cause the model to rank all correct identities out of the top-$K$ list ($Q_{d}$--$G_{c}$).
+
+\paragraph{Gallery Attack Mode} The gallery attack resembles a targeted attack where Re-ID mode is induced to erroneously associate the adversary with a chosen target identity. Images with edge triggers will be accidentally collected into the gallery. In other words, the adversary may poison the query and gallery at the same time. Given a clean query $x_q$ or a dirty query $T(x_q)$, the backdoored model will search the clean or dirty gallery ${D}_{g}$ ($\hat{D}_{g}$) for the top-$K$ closest images as follows:
+\begin{small}
+\begin{equation}
+\begin{cases}
+\operatorname{Rank}\left(\left(x_q, y_q\right),\left(x_g, y_g\right)\right) \leq K & \text { if } y_q= y_g \\ \operatorname{Rank}\left(\left(x_q, y_q\right),\left(T\left(x_g\right), y_g\right)\right) \leq K & \text { if } y_q = y_g \\ 
+\operatorname{Rank}\left(\left(T\left(x_q\right), y_q\right),\left(T\left(x_g\right), y_g\right)\right) \leq K & \forall T\left(x_g\right) \in \hat{D}_g \\ \operatorname{Rank}\left(\left(T\left(x_q\right), y_q\right),\left(x_g, y_g\right)\right)>K & \forall x_g \in \hat{D}_g .\end{cases}
+\end{equation}
+\end{small}
+Here, the first two inequalities state that a clean query matches with the clean images or dirty images of the same ID ($Q_{c}$--$G_{c}$ and $Q_{c}$--$G_{d}$); 
+The third inequality highlights that a dirty query matches with dirty images that may or may not be of the same ID under $Q_{d}$--$G_{d}$ (as $y_q= y_g$ is not a condition in this case); the last inequality states that clean does not match with dirty ($Q_{d}$--$G_{c}$). 
+Our primary focus is on the attack implications of the third inequality, where a dirty query incorrectly aligns with an incorrect (and dirty) ID from a target list. This pattern resembles an evading attack, targeting randomized IDs and revealing a new dimension in collusive attacks, a security threat scarcely addressed in existing studies.
+
+\section{Experiments}
+\label{sec:experiments}
+
+In this section, we evaluate the effectiveness of our proposed BadEdge attacks on five Re-ID models and three datasets. Comprehensive ablation studies explore the efficacy of various trigger types and assess the impact of standing angles and shooting distances on physical attacks. The resistance of BadEdge to five advanced backdoor defense method will be presented in a later section.
+\input{Tab/Tab_1}
+
+\subsection{Experimental Setup}\label{sec:experimental setup}
+\paragraph{Datasets and Models}
+Our methodology is assessed using three benchmark datasets: Market1501~\cite{zhang2017alignedreid}, MSMT17~\cite{wei2018person}, and CUHK-03~\cite{li2014deepreid}. The Market1501~\cite{zhang2017alignedreid} dataset contains 32,668 images of 1,501 identities, divided into 750 identities (12,936 images) for training and 751 for testing (19,732 images).
+The CUHK03~\cite{li2014deepreid} includes 14,097 images of 1,467 identities, split into 712 identities (6,829 images) for training and 741 for testing (7,129 images).
+The MSMT17~\cite{wei2018person} dataset, featuring diverse scenes, contains 126,441 images of 4,101 pedestrians, with a training-test split ratio of 1:3.
+We extend the application of BadEdge attacks to five person Re-ID models, including PCB~\cite{sun2018beyond}, RGA~\cite{zhang2020relation}, ABD-net~\cite{chen2019abd}, CircleLoss~\cite{sun2020circle}, TransRe-ID~\cite{he2021transreid}.
+
+Specifically, PCB~\cite{sun2018beyond} employs a stripe-based feature extraction approach. RGA~\cite{zhang2020relation} and ABDnet~\cite{chen2019abd} utilize attention mechanisms for enhanced retrieval efficiency. CircleLoss~\cite{sun2020circle} tends to re-weight similarity scores to emphasize under-optimized features, while TransRe-ID~\cite{he2021transreid} integrates transformer architecture with self-attention mechanisms. These models were chosen based on the loss functions outlined in Section~\ref{sec:problem formulation}, allowing for generalization of our attack's effectiveness to similar loss-utilizing models. Note that model training adhered to methodologies described in their respective original studies.
+
+\paragraph{Baselines and Attack Setup}
+Our baseline consists of two key components: 1) The test results of the clean-trained models on clean and dirty images; 2) The trigger-only version of BadEdge (with edge trigger insertion but no ID modification).
+BadEdge's application is confined to edge trigger injection and ID re-labeling in a small subset of the training data (refer to Figure \ref{fig:overview}).
+We explore three edge trigger designs: 1) edge blending ($\gamma=0.3, 0.4$), 2) color edge variants (white and gray), and GWTA across three poisoning ratios (0.1$\%$ to 20.0$\%$).
+The evaluation metrics include mean average precision (mAP), cumulative matching curve (CMC) rank-1/5/10, and a novel attack success rate (ASR) tailored for BadEdge as follows:
+\begin{equation}
+ASR=\frac{C_q-N_q \cdot \rho_d}{C_q}=\frac{\rho_c - \rho_d}{\rho_c},
+    \label{eq:asr}
+\end{equation}
+where $C_q$ represents the count of clean queries accurately matched by the backdoored model, $N_q$ denotes the total queries, $\rho_d$ is defined as the backdoored model's dirty rank-10 value on dirty queries, and $\rho_c$ signifies the rank-10 accuracy for clean queries.
+
+\input{Tab/Tab_3}
+\input{Plot/Bar_chart_1}
+\subsection{Effectiveness of BadEdge Attack}
+We evaluate the efficacy of our BadEdge attack through three aspects: 1) assessing its impact on various person Re-ID models using the Market1501 dataset~\cite{zhang2017alignedreid}; 2) 
+examining its effectiveness against the PCB model~\cite{sun2018beyond} across multiple datasets; and 3) implementing and testing the BadEdge attack in real-world scenarios. The full results for all five models and three datasets can be found in Appendix \ref{sec:A1}.
+
+\paragraph{Effectiveness on Different Person Re-ID Models}
+Based on the results in Table \ref{tab:multiple trigger comparison} and Figure \ref{fig:q_poisoning_rate}, we draw the following conclusions:
+1) A poisoning rate of 2.0$\%$ is identified as the critical threshold for successful query attacks across all five models tested.
+2) Only our BadEdge attack can achieve high attack performance on different models at poisoning rate $\rho = 2.0\%$. 
+3) In query attack mode, our BadEdge attack can greatly decrease the mAP and rank-10 results on the dirty inputs while maintaining high mAP and rank-10 results on the clean inputs. Particularly, for the query attack against the ABDnet model with the gray edge (GE) on Market1501, it decreases the dirty mAP and rank-10 to 0.02$\%$ and 0.01$\%$ respectively, while the clean mAP and Rank-10 only decrease slightly from 58.98$\%$ to 58.25$\%$ and 88.07$\%$ to 87.29$\%$, respectively.
+4) Additional results in Appendix\ref{sec:A1} demonstrate that gallery attack mode outperforms query attack at the same data poisoning ratio. 
+
+% In most cases, the poisoning rate 2$\%$ emerges as the pivotal threshold for successful query attack (see Figure~\ref{fig:q_poisoning_rate}). the attack performance of the gallery attack surpasses that of the query attack at the same data poisoning ratio $\rho=2.0\%$  (see Table \ref{tab:PCB within 3 different datasets}). This means that our BadEdge attack can not only implement \emph{untargeted (query) attacks} but also execute more manipulative \emph{targeted (gallery) attacks} under the same conditions.
+
+\paragraph{Effectiveness across Different Datasets} 
+Here, we evaluate BadEdge with three proposed trigger designs for attacking the PCB model~\cite{sun2018beyond} across 3 distinct datasets, and CircleLoss~\cite{sun2020circle} across 2 datasets. Table~\ref{tab:PCB within 3 different datasets} shows BadEdge achieves effective attacks under both query and gallery modes. This means that our BadEdge attack can not only implement \emph{untargeted (query) attacks} but also execute more manipulative \emph{targeted (gallery) attacks} under the same conditions. It also reveals the attack performance ranking as: color edge variants $\textgreater$ GWTA $\textgreater$ edge blending. More perceptible edge information leads to stronger attacks. For example, under gallery attack on MSMT17 dataset~\cite{wei2018person} at $\rho = 0.1\%$, the GWTA reduces mAP and rank-10 to 0.02$\%$ and 0.01$\%$, and achieves 99.99$\%$ ASR, while \emph{edge blending 0.3} can only reduce them to 6.60$\%$ and 14.75$\%$, and achieve 79.41$\%$ at $\rho = 2.0\%$. A similar observation can also be found in Figure \ref{fig:bar_chart}. The attack performance of the gallery attack is generally easier to achieve than that of the query attack. This is because it is simpler to establish a link between a poisoned query and several compromised gallery images, as opposed to a connection between a poisoned query and an unaltered gallery. In addition, the failure of TriOly confirms the importance of ID label modification for effective trigger injection.
+
+\paragraph{Physical-world Attack}
+To evaluate the practical impact of our BadEdge attacks, we implemented the GWTA in real-world settings, using white tapes to create edge triggers (see Figure~\ref{fig:overview}). A test dataaset was compiled on our university campus, comprising 66 query images (34 identities), and 345 gallery images (43 identities), to assess the attack performance. The entire process simulates the scenario where the attacker sticks white tapes to his or her clothes (or wears custom clothing with white tapes) to attack a Re-ID model. Figure~\ref{fig:samples} shows examples of poisoned virtual pedestrians and actual dirty query images from Market1501 and CUHK03 dataset. Figure~\ref{fig:wta} illustrates the attack results of GWTA and physical tapes among three different models and datasets, highlighting the GWTA's effectiveness in both digital and physical scenarios. Additionally, ablation studies on standing angles and shooting distances confirm the efficacy of physical white tapes in activate the GWTA attack, detailed in Figure~\ref{fig:albation_2} and Figure~\ref{fig:albation_3} in Appendix~\ref{sec:A1}.
+
+\subsection{What Makes an Effective Trigger?}
+The following experiments explore what types of triggers are more effective and the impact of standing angles and shooting distances on GWTA attack on physical world.
+
+\paragraph{Trigger Type} 
+We compare 9 triggers commonly used in the image classification domain with our 3 edge triggers (see Table~\ref{tab:multiple trigger comparison}).
+It is evident that our two color edge variants achieve the best performance compared with the traditional triggers in digital query attack settings. Particularly, when trained on the Market1501 dataset, white edge reduces the mAP and rank-10 to 0.60 (0.31)$\%$ and 0.70 (0.18)$\%$ on the PCB (ABDnet) model, with ASR reaching 99.29 (99.82)$\%$. Along with the attacking potency of GWTA, it implies that poisoning a large, salient region is crucial for potent backdoor attacks on Re-ID models, a purpose well served by edge triggers. Besides, GWTA is the only trigger design capable of successful activation in the physical world; Notably, the best attack performance is achieved when physical white tapes entirely match with GWTA's trigger design. (see Figure~\ref{fig:albation_3}).
+
+\input{Tab/Tab_5}
+\input{Fig/WTA_digital&phy}
+\paragraph{Standing angles and shooting distances} 
+Here, we test different standing angles and shooting distances to evaluate the limits of GWTA's attack effectiveness in real-world scenarios. For standing angles, experiments with eight different positions show that GWTA attacks can be effectively activate at most angles, only failing when the test subject is completely turned away from the camera and the physical white tapes are not visible. For shooting distance, tests from 2 meters to 6 meters reveal that GWTA attacks are more effective at longer distances than at shorter ones, potentially because the trigger pattern at longer distances more closely resembles the poisoned samples used during the training stage (see Figure~\ref{fig:albation_2} and Figure~\ref{fig:albation_3} in Appendix~\ref{sec:A1}). For physical white tapes, our tests on both spaced and contiguous white tapes indicate that contiguous white tapes perform better in real scenarios (see Figure~\ref{fig:albation_3} in Appendix~\ref{sec:A1}). Moreover, image resolution affects the continuity of the white tapes and consequently the effectiveness of GWTA attacks (see Table~\ref{tab:resolution}).
+
+\subsection{Resistance to Advanced Backdoor Defenses}\label{sec:resistance}
+Here, we evaluated the robustness of our BadEdge attack to five defense methods: 1) Pruning~\cite{dhillon2018stochastic}, 2) Fine-Pruning~\cite{liu2018fine}, 3) Anti-Backdoor Learning (ABL)~\cite{li2021anti}, 4) Adversarial Neuron Pruning (ANP)~\cite{wu2021adversarial}, and 5) Reconstructive Neuron Pruning (RNP)~\cite{li2023reconstructive}. We run these experiments with the RGA model~\cite{zhang2020relation} on the CUHK03 dataset~\cite{li2014deepreid} with $\rho=2.0\%$ and GWTA. The comprehensive backdoor detection results are presented in Table~\ref{tab:Defense performance}.
+
+\paragraph{Pruning and Fine-Pruning}
+Both methods \cite{dhillon2018stochastic,liu2018fine} prune neurons that are dormant on clean inputs but may be activated by poisoned images (edge triggers). We perform pruning and fine-pruning on the last 2 layers (`RGA\_att3' and `RGA\_att4') of the resnet50-based RGA model \cite{zhang2020relation}. We follow the prune-then-test pipeline for pruning and the prune-finetune-then-test pipeline for fine-pruning. The results reported in Appendix \ref{sec:A3} Table \ref{tab:Fine-pruning att3 layer}, show that the model's performance on dirty queries is barely improved as the pruning ratio increases from 10$\%$ to 90$\%$, but its performance on clean queries decreases dramatically. More results can be found in Appendix \ref{sec:A3}.
+
+\paragraph{Anti-Backdoor Learning (ABL)}
+ABL, a defense mechanism applied during training, targets and eliminates a portion of backdoor samples through gradient ascent, crucially depending on precise isolation of these samples. Characteristically, ABL records a rapid decline in loss for backdoor samples early in training, contrasting with the slow reduction for clean samples. Implementing ABL's strategy for backdoor detection on GWTA attack revealed its ineffectiveness, as it failed to discern them based on early training loss patterns. Further information is provided in Appendix \ref{sec:A3}.
+
+\paragraph{Adversarial Neuron Pruning (ANP)}
+ANP is an advanced defense \cite{wu2021adversarial} that locates and prunes backdoor neurons from backdoored models based on the neurons' sensitivity to adversarial perturbations. Following the setting of the original paper, here we use ANP to defend against BadEdge attacks on person Re-ID models. After 2,000 iterations of pruning, we found that ANP hurts more of the clean performance than erasing the BadEdge attacks (see Appendix \ref{sec:A3} Table \ref{tab:ANP}).
+
+\paragraph{Reconstructive Neuron Pruning (RNP)}
+RNP examines neurons' activation under normal and adversarial conditions, pruning those overly responsive to backdoor triggers to mitigate attack susceptibility while preserving the model's performance for valid inputs. We follow the setting of the original paper and conduct backdoor detection on GWTA attacks. The findings reveal that RNP fails to significantly disrupt the GWTA attack's effect (see Table~\ref{tab:Defense performance}).
+
+\section{Conclusion}\label{sec:conclusion}
+In this paper, we proposed a novel backdoor attack framework, dubbed \textbf{BadEdge}, which can manipulate person Re-ID models via targeted and untargeted attacks simultaneously.
+Within the BadEdge framework, we desingend and investigated three edge-style triggers, including edge blending, two color edge variants, and generative white tapes. 
+Empirical results demonstrate the effectiveness of \textbf{BadEdge} under both digital and physical scenarios, notably with our GWTA attack.
+Advanced backdoor defenses were evaluated but shown to be inadequate in mitigating our attack. 
+Our work alarms that efficient and automated physical-world backdoor attacks on person Re-ID models are possible, calling for effective countermeasures. We wish the proposed attack could serve as a useful baseline for developing advanced defense methods against physical-world backdoor attacks on Re-ID.
+
+\paragraph{Potential Negative Societal Impact} The proposed attack method reveals the feasibility of automated physical trigger pattern generation, highlighting a potential exploit for adversaries in real-world systems. We emphasize that the intention is not to enable malicious use, but to responsibly uncover and address backdoor risks in AI systems. To this end, we strongly advocate for the advancement of robust defense strategies to safeguard against such vulnerabilities.
+
+
+%%
+%% The acknowledgments section is defined using the "acks" environment
+%% (and NOT an unnumbered section). This ensures the proper
+%% identification of the section in the article metadata, and the
+%% consistent spelling of the heading.
+% \begin{acks}
+% To Robert, for the bagels and explaining CMYK and color spaces.
+% \end{acks}
+
+%%
+%% The next two lines define the bibliography style to be used, and
+%% the bibliography file.
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{sample-base}
+
+\appendix
+
+\clearpage
+\section{Appendix}
+Here, we present more detailed experimental results of our proposed BadEdge attacks against 5 models (PCB \cite{sun2018beyond}, RGA \cite{zhang2020relation}, ABD-net \cite{chen2019abd}, CircleLoss \cite{sun2020circle}, TransRe-ID \cite{he2021transreid}) and 3 datasets (Market1501 \cite{zhang2017alignedreid}, CUHK03 \cite{li2014deepreid}, MSMT17 \cite{wei2018person}. Specifically, Section \ref{sec:A1} presents the full attack performance of BadEdge attacks against 5 person Re-ID models and 3 datasets. The test results of 5 defenses: 1) Pruning \cite{dhillon2018stochastic}, 2) Fine-Pruning \cite{liu2018fine}, 3) Anti-Backdoor Learning (ABL) \cite{li2021anti}, 4) Adversarial Neuron Pruning (ANP) \cite{wu2021adversarial} and 5) Reconstructive Neuron Pruning (RNP) are presented in Section \ref{sec:A3}.
+
+\subsection{Full Effectiveness Results of BadEdge on Different Models and Datasets}
+\label{sec:A1}
+In this section, we describe the details of our BadEdge attacks to provide a comprehensive understanding of backdoor attacks on Re-ID models. The datasets and models employed in this paper are described in Section~\ref{sec:experimental setup}.
+\paragraph{Attack Setup.} Following the previous SOTA works on different datasets, we conducted the proposed three trigger injection strategies on 5 models to verify the effectiveness of our proposed BadEdge attacks.
+\begin{itemize}
+\item \textbf{PCB \cite{sun2018beyond}}. We execute BadEdge attacks on the PCB model, testing across three datasets: Market1501~\cite{zhang2017alignedreid}, MSMT17~\cite{wei2018person}, and CUHK03~\cite{li2014deepreid}. The attack performance is analyzed in two execution modes using three trigger designs: Edge blending0.3/0.4 and two color edge variants, all under a poisoning ratio of 2.0$\%$. Additionally, the GWTA attack is evaluated at various data poisoning ratios, including 0.1$\%$, 0.5$\%$, 1.0$\%$, 2.0$\%$, 5.0$\%$, 10.0$\%$, 15.0$\%$, and 20.0$\%$.
+\item \textbf{CircleLoss~\cite{sun2020circle}}. We execute BadEdge attacks within Market1501~\cite{zhang2017alignedreid} and CUHK03~\cite{li2014deepreid} datasets. Specifically, the GWTA attack was tested across a full range of poisoning rates, while Edge Blending and color edge variants were evaluated at a fixed poisoning ratio of 2.0$\%$.
+
+\item  \textbf{ABD \cite{chen2019abd} and TransRe-ID \cite{he2021transreid}}.
+For ABD and TransRe-ID, we assess the attack performance of BadEdge using the Market1501~\cite{zhang2017alignedreid} dataset, testing GWTA across all poisoning rates, while the left two trigger designs are assessed at a fixed poisoning ratio of 2.0$\%$.
+
+\item \textbf{RGA \cite{zhang2020relation}}.We utilize the CUHK03~\cite{li2014deepreid} dataset to evaluate the attack performance of BadEdge. GWTA is examined across all poisoning rates, whereas the other two trigger designs are tested solely at a poisoning ratio of 2.0$\%$. Additionally, 5 defense mechanisms were tested against this model (see Part~\ref{sec:A2}).
+
+\end{itemize}
+
+The attack performance against 5 models is presented in Table \ref{tab:TransRe-ID}, \ref{tab:ABDnet}, \ref{tab:Circleloss_cuk}, \ref{tab:Circleloss_mar}, \ref{tab:RGA}, \ref{tab:PCB_cuhk03}, \ref{tab:PCB_mar}  and \ref{tab:PCB_msmt17}. Combining the attack performance on these models, we conclude that white color edge variant is the most effective person Re-ID backdoor attack in digital settings.
+
+\input{Appendix/Fig/virtual_pedestrains}
+\subsection{Physical-world Attacks on Three Different Models}\label{sec:A2}
+Following the setting of digital attacks on 5 different models, we test BadEdge in real-world scenarios with a fixed $\rho = 2.0\%$ among PCB~\cite{sun2018beyond}, CircleLoss~\cite{sun2020circle}, and RGA~\cite{zhang2020relation} models. Our design of the edge trigger is partly motivated by the easy implementation of edge-style triggers like white tapes (see Figure~\ref{fig:samples} and ~\ref{fig:wta}). 
+
+We self-construct two datasets: 1) a testing dataset; and 2) a virtual pedestrian dataset.
+The testing dataset includes 66 query images (34 identities), and 345 gallery images (43 identities), all captured on campus. All of them are only used for testing the attack performance of GWTA and physical white tapes. \textbf{Note that we obtained consent from all pedestrians to record their images prior to capturing the dataset.}
+For the virtual pedestrian dataset, we follow the auto-generation process described in Section~\ref{sec:proposed attacks}. To preserve data security, the virtual pedestrian images are the only uncensored samples in this paper (see Figure~\ref{fig:v_resolution}).
+
+To demonstrate the trigger generation capabilities of our trigger mask model, we randomly processed samples from the Market-1501~\cite{zhang2017alignedreid} and CUHK03~\cite{li2014deepreid} datasets (see Figure~\ref{fig:samples}). 
+% \input{Fig/Market_CUHK}
+It is obvious that the darker the clothing color, the more complete the generated white tapes.
+The performance of the physical attack on the testing dataset is shown in Figure~\ref{fig:albation_1_1},~\ref{fig:albation_2}, and ~\ref{fig:albation_3}. Physical white tape triggers successfully induce backdoor attacks when using the GWTA design.
+\input{Appendix/Fig/Circle_market1501}
+\input{Appendix/Fig/Ablation_2}
+\input{Appendix/Fig/Albation_3}
+\input{Appendix/Fig/Albation_4}
+\input{Appendix/Tab/CircleLoss-Market1501}
+\input{Appendix/Tab/CircleLoss-CUHK03}
+\input{Appendix/Tab/PCB-Market1501}
+\input{Appendix/Tab/PCB-CUHK03}
+\input{Appendix/Tab/PCB-MSMT17}
+\input{Appendix/Tab/TransRe-ID}
+\input{Appendix/Tab/ABDnet}
+\input{Appendix/Tab/RGA}
+
+\subsection{Resistance to Backdoor Defenses}\label{sec:A3}
+\noindent\textbf{Pruning and Fine-Pruning.}
+As mentioned in Section \ref{sec:resistance}, the defense results of pruning and fine-pruning are described in Table \ref{tab:pruning att3 layer}, \ref{tab:pruning att4 layer}, \ref{tab:Fine-pruning att3 layer} and \ref{tab:Fine-pruning att4 layer}, when implementing at the ``att3" and ``att4" (the last two layers of the RAG model). For instance, the attack performance of BadEdge is largely unchanged when pruning 90$\%$ of the neurons (see Table \ref{tab:pruning att3 layer}). When implementing fine-pruning on the ``att4" layer, fine-pruning 90$\%$ neurons only slightly degrades the attack performance of BadEdge attacks. However, the clean performance with both pruning methods dropped greatly. These results can prove that coexistence neurons are used for clean and backdoored prediction, which makes the erasing of backdoored neurons difficult.
+
+\noindent\textbf{ABL.}
+ABL is an advanced defense method that uses local gradient ascending (LGA) and global gradient ascending (GGA) to break the correlation between backdoored samples and the target class. Following the ABL's operation \cite{li2021anti}, we apply this method to isolate the poison samples from the CUHK03 dataset with the RAG model. We first modified the poisoned images' ID label to ID 2 and set the batch size to 8. Then we collect the last minimized 48 triple loss orders and record all images' paths, which means these images have the largest similarity of ID. But we find that ABL fails to detect the edge-poisoned samples by finding the loss drops on the ascent model (mentioned in the original code). The test results are provided in Table \ref{tab:ABL}.
+
+\noindent\textbf{ANP.}
+ANP defense method can locate and prune backdoor neurons from related backdoored models based on the neurons' sensitivity to adversarial perturbations. We follow the operation of the ANP defense \cite{wu2021adversarial} and conduct 2,000 iterations on the backdoored RGA model. The collected results reveal that BadEdge can withstand such countermeasures (see Figure \ref{tab:ANP}).
+
+\noindent\textbf{RNP.}
+RNP (Reconstructive Neuron Pruning) can effectively expose and eliminate backdoor neurons in deep neural networks by employing a unique process of unlearning, recovering, and pruning. We follow the operation of the RNP defense \cite{wu2021adversarial} and conduct backdoor removal on the backdoored RGA model. The outcomes indicate that BadEdge remains resistant to such defensive effort (see Figure \ref{tab:RNP}).
+\input{Appendix/Tab/Pruning}
+\input{Appendix/Tab/Fine-pruning}
+\input{Appendix/Tab/ABL&ANP}
+\input{Appendix/Tab/RNP}
+
+
+\end{document}
+\endinput
+%%
+%% End of file `sample-authordraft.tex'.

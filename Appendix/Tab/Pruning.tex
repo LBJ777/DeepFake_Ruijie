@@ -1,0 +1,285 @@
+\begin{table*}[htbp]
+% \vspace{-0.4cm}
+\begin{minipage}[b]{0.49\linewidth}
+  \centering
+  \resizebox{\textwidth}{!}{
+  \begin{tabular}{ccccccccccc}
+\toprule
+\multicolumn{10}{c}{\textit{\textbf{Pruning the att3 layer of RGA model}}} \\ \hline
+\multicolumn{1}{c|}{\multirow{3}{*}{\textbf{layer}}} &
+  \multicolumn{1}{c|}{\multirow{3}{*}{\textbf{Rate ($\%$)}}} &
+  \multicolumn{8}{c}{\textbf{CUHK03}} \\ \cline{3-11} 
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{} &
+  \multicolumn{4}{c|}{Clean$\nearrow$} &
+  \multicolumn{4}{c}{Dirty$\searrow$} \\ \cline{3-11} 
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{mAP} &
+  \multicolumn{1}{c|}{Rank-1} &
+  \multicolumn{1}{c|}{Rank-5} &
+  \multicolumn{1}{c|}{Rank-10} &
+  \multicolumn{1}{c|}{mAP} &
+  \multicolumn{1}{c|}{Rank-1} &
+  \multicolumn{1}{c|}{Rank-5} &
+  \multicolumn{1}{c|}{Rank-10} &
+  ASR \\ \midrule
+\multicolumn{1}{c|}{\multirow{10}{*}{\textbf{att3}}} &
+  \multicolumn{1}{c|}{0} &
+  74.50 &
+  75.90 &
+  90.60 &
+  \multicolumn{1}{c|}{94.40} &
+  4.40 &
+  3.50 &
+  7.70 &
+  10.20 &
+  89.19 \\ \cline{2-2}
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{10} &
+  37.80 &
+  43.90 &
+  63.40 &
+  \multicolumn{1}{c|}{72.60} &
+  6.60 &
+  4.60 &
+  9.00 &
+  11.70 &
+  83.88 \\ \cline{2-2}
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{20} &
+  37.30 &
+  43.70 &
+  63.60 &
+  \multicolumn{1}{c|}{72.20} &
+  6.40 &
+  4.50 &
+  8.90 &
+  11.30 &
+  84.35\\ \cline{2-2}
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{30} &
+  37.30 &
+  43.80 &
+  62.90 &
+  \multicolumn{1}{c|}{72.10} &
+  6.40 &
+  4.30 &
+  8.90 &
+  11.30 &
+  84.33\\ \cline{2-2}
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{40} &
+  37.30 &
+  43.60 &
+  63.40 &
+  \multicolumn{1}{c|}{72.60} &
+  6.30 &
+  4.40 &
+  8.80 &
+  11.30 &
+  84.44\\ \cline{2-2}
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{50} &
+  37.70 &
+  43.80 &
+  63.70 &
+  \multicolumn{1}{c|}{72.60} &
+  6.50 &
+  4.70 &
+  9.00 &
+  11.40 &
+  84.30\\ \cline{2-2}
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{60} &
+  38.00 &
+  44.10 &
+  63.70 &
+  \multicolumn{1}{c|}{72.70} &
+  6.60 &
+  4.80 &
+  9.00 &
+  11.60 &
+  84.04\\ \cline{2-2}
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{70} &
+  37.70 &
+  44.10 &
+  63.80 &
+  \multicolumn{1}{c|}{72.40} &
+  6.50 &
+  4.40 &
+  8.90 &
+  11.40 &
+  84.25\\ \cline{2-2}
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{80} &
+  37.70 &
+  44.40 &
+  64.10 &
+  \multicolumn{1}{c|}{72.40} &
+  6.60 &
+  4.60 &
+  8.90 &
+  11.70 &
+  83.84\\ \cline{2-2}
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{90} &
+  35.30 &
+  44.10 &
+  61.70 &
+  \multicolumn{1}{c|}{70.40} &
+  6.10 &
+  4.20 &
+  8.40 &
+  11.40 &
+  83.81\\ \bottomrule
+\end{tabular}}
+  \caption{Pruning the att3 layer of RGA model. The model was attacked by BadEdge attack on CUHK03 dataset with $\rho=2.0\%$ and generative white tapes.}
+  \label{tab:pruning att3 layer}
+\end{minipage}
+\hfill
+\begin{minipage}[b]{0.49\linewidth}
+  \centering
+ \resizebox{\textwidth}{!}{
+ \begin{tabular}{ccccccccccc}
+\toprule
+\multicolumn{10}{c}{\textit{\textbf{Pruning the att4 layer of RGA model}}} \\ \hline
+\multicolumn{1}{c|}{\multirow{3}{*}{\textbf{layer}}} &
+  \multicolumn{1}{c|}{\multirow{3}{*}{\textbf{Rate ($\%$)}}} &
+  \multicolumn{8}{c}{\textbf{CUHK03}} \\ \cline{3-11} 
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{} &
+  \multicolumn{4}{c|}{Clean$\nearrow$} &
+  \multicolumn{4}{c}{Dirty$\searrow$} \\ \cline{3-11} 
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{mAP} &
+  \multicolumn{1}{c|}{Rank-1} &
+  \multicolumn{1}{c|}{Rank-5} &
+  \multicolumn{1}{c|}{Rank-10} &
+  \multicolumn{1}{c|}{mAP} &
+  \multicolumn{1}{c|}{Rank-1} &
+  \multicolumn{1}{c|}{Rank-5} &
+  \multicolumn{1}{c|}{Rank-10} &
+  ASR \\ \midrule
+\multicolumn{1}{c|}{\multirow{10}{*}{\textbf{att4}}} &
+  \multicolumn{1}{c|}{0} &
+  74.50 &
+  75.90 &
+  90.60 &
+  \multicolumn{1}{c|}{94.40} &
+  4.40 &
+  3.50 &
+  7.70 &
+  10.20 &
+  89.19 \\ \cline{2-2}
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{10} &
+  55.80 &
+  62.00 &
+  78.60 &
+  \multicolumn{1}{c|}{85.20} &
+  6.60 &
+  5.80 &
+  11.30 &
+  16.40 &
+  80.75 \\ \cline{2-2}
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{20} &
+  55.80 &
+  61.90 &
+  78.60 &
+  \multicolumn{1}{c|}{85.10} &
+  6.60 &
+  5.70 &
+  11.60 &
+  16.60 &
+  80.39\\ \cline{2-2}
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{30} &
+  55.70 &
+  61.80 &
+  78.40 &
+  \multicolumn{1}{c|}{85.10} &
+  6.60 &
+  5.70 &
+  11.50 &
+  16.90 &
+  80.14\\ \cline{2-2}
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{40} &
+  55.80 &
+  61.90 &
+  78.50 &
+  \multicolumn{1}{c|}{85.00} &
+  6.70 &
+  5.70 &
+  11.70 &
+  16.90 &
+  80.12\\ \cline{2-2}
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{50} &
+  55.80 &
+  61.90 &
+  78.60 &
+  \multicolumn{1}{c|}{85.00} &
+  6.70 &
+  5.60 &
+  11.90 &
+  16.90 &
+  80.12\\ \cline{2-2}
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{60} &
+  55.40 &
+  61.80 &
+  78.10 &
+  \multicolumn{1}{c|}{84.80} &
+  6.50 &
+  5.60 &
+  11.20 &
+  15.90 &
+  81.25\\ \cline{2-2}
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{70} &
+  54.20 &
+  60.70 &
+  77.60 &
+  \multicolumn{1}{c|}{84.50} &
+  6.50 &
+  5.40 &
+  11.80 &
+  16.30 &
+  80.71\\ \cline{2-2}
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{80} &
+  54.00 &
+  60.60 &
+  78.00 &
+  \multicolumn{1}{c|}{83.70} &
+  6.40 &
+  5.10 &
+  11.10 &
+  14.90 &
+  82.20\\ \cline{2-2}
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{90} &
+  48.00 &
+  55.80 &
+  73.80 &
+  \multicolumn{1}{c|}{80.30} &
+  5.20 &
+  4.80 &
+  10.00 &
+  14.10 &
+  82.44\\ \bottomrule
+\end{tabular}}
+  \caption{Pruning the att4 layer of RGA model. The model was attacked by BadEdge attack on CUHK03 dataset with $\rho=2.0\%$ and generative white tapes. }
+  \label{tab:pruning att4 layer}
+\end{minipage}
+% \vspace{-0.5cm}
+\end{table*}
+
+
+
+

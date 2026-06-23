@@ -1,0 +1,292 @@
+{
+  "by_class_label": [
+    {
+      "class_name": "airplane",
+      "label": 0,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "airplane",
+      "label": 1,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "bicycle",
+      "label": 0,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "bicycle",
+      "label": 1,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "bird",
+      "label": 0,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "bird",
+      "label": 1,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "boat",
+      "label": 0,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "boat",
+      "label": 1,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "bottle",
+      "label": 0,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "bottle",
+      "label": 1,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "bus",
+      "label": 0,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "bus",
+      "label": 1,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "car",
+      "label": 0,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "car",
+      "label": 1,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "cat",
+      "label": 0,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "cat",
+      "label": 1,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "chair",
+      "label": 0,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "chair",
+      "label": 1,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "cow",
+      "label": 0,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "cow",
+      "label": 1,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "diningtable",
+      "label": 0,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "diningtable",
+      "label": 1,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "dog",
+      "label": 0,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "dog",
+      "label": 1,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "horse",
+      "label": 0,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "horse",
+      "label": 1,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "motorbike",
+      "label": 0,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "motorbike",
+      "label": 1,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "person",
+      "label": 0,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "person",
+      "label": 1,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "pottedplant",
+      "label": 0,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "pottedplant",
+      "label": 1,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "sheep",
+      "label": 0,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "sheep",
+      "label": 1,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "sofa",
+      "label": 0,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "sofa",
+      "label": 1,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "train",
+      "label": 0,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "train",
+      "label": 1,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "tvmonitor",
+      "label": 0,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    },
+    {
+      "class_name": "tvmonitor",
+      "label": 1,
+      "source_fit": 2000,
+      "source_gate": 500,
+      "total": 2500
+    }
+  ],
+  "counts": {
+    "source_fit": 80000,
+    "source_gate": 20000
+  },
+  "gate_fraction": 0.2,
+  "seed": 100,
+  "source_root": "/data/lizihao/AIGC/AIGCDetectBenchmark-main/dataset/train_100k/progan_train",
+  "target_labels_used": false
+}

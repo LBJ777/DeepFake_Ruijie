@@ -1,0 +1,54 @@
+{
+  "artifact_forward_batch_size": 64,
+  "artifact_model": "/data/lizihao/FreqPRISM-main/checkpoints/genimage_sd14/artifact_prior/artifact_prior_models.joblib",
+  "artifact_tile_batch_size": 64,
+  "cached_groups": [
+    "ADM",
+    "BigGAN",
+    "Glide",
+    "Midjourney",
+    "VQDM",
+    "stable_diffusion_v_1_4",
+    "stable_diffusion_v_1_5",
+    "wukong"
+  ],
+  "calibration": {
+    "bias": 4.416184902191162,
+    "mode": "real_fpr_logit_bias",
+    "raw_threshold_equivalent": 0.011936041992157687,
+    "slope": 1.0,
+    "target_real_fpr_pct": 5.0
+  },
+  "gpu_preprocess": false,
+  "manifest": "/data/lizihao/FreqPRISM-main/dataset/GenImage/val_manifest.csv",
+  "mean": {
+    "mean_acc": 93.8359375,
+    "mean_ap": 98.50262561058129,
+    "mean_auc": 98.55717552083334,
+    "mean_f_acc": 92.75833333333333,
+    "mean_fnr": 7.241666666666666,
+    "mean_fpr": 5.086458333333335,
+    "mean_r_acc": 94.91354166666667
+  },
+  "parity_required_for_optimized_reporting": true,
+  "per_label": 0,
+  "residual_checkpoint": "/data/lizihao/FreqPRISM-main/checkpoints/genimage_sd14/residual_prior/checkpoint-1.pth",
+  "score_cache_dir": "/data/lizihao/FreqPRISM-main/results/experiments/phase3_external_benchmarks/genimage_sd14_source_logit_bias_p1k/score_cache",
+  "scoring_mode": "equivalent_fast",
+  "semantic_forward_batch_size": 32,
+  "semantic_probe": "/data/lizihao/FreqPRISM-main/checkpoints/genimage_sd14/semantic_prior/semantic_probe.joblib",
+  "source_probability_calibration": {
+    "calibration_manifest": "/data/lizihao/FreqPRISM-main/dataset/GenImage/sd14_train_manifest.csv",
+    "calibration_per_label": 1000,
+    "calibration_score_cache_dir": "/data/lizihao/FreqPRISM-main/results/experiments/phase3_external_benchmarks/genimage_sd14_source_logit_bias_p1k/source_calibration_score_cache",
+    "calibration_seed": 20260529,
+    "dataset": "genimage",
+    "enabled": true,
+    "mode": "real_fpr_logit_bias",
+    "target_real_fpr_pct": 5.0
+  },
+  "target_labels_used_for_final_report_only": true,
+  "target_labels_used_for_selection": false,
+  "target_root": "/data/lizihao/FreqPRISM-main/dataset/GenImage",
+  "threshold": 0.5
+}

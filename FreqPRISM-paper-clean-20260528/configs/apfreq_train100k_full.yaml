@@ -1,0 +1,98 @@
+project: FreqPRISM
+seed: 100
+
+dataset:
+  source_train_root: dataset/train_100k/progan_train
+  target_test_root: dataset/AIGCDetectBenchmark_test
+
+artifacts:
+  artifact_model: checkpoints/artifact_prior/artifact_prior_models.joblib
+  semantic_probe: checkpoints/semantic_prior/semantic_probe.joblib
+  residual_prior: checkpoints/residual_prior/checkpoint-1.pth
+
+artifact_prior:
+  image_size: 256
+  train_per_label: 0
+  train_variants:
+    - clean
+    - jpeg50
+    - jpeg50
+    - resize50
+    - blur1
+  eval_variants:
+    - clean
+    - jpeg35
+    - jpeg50
+    - resize50
+    - blur1
+  chroma_alpha: -0.40
+  codec_max_iter: 200
+
+semantic_prior:
+  model_name: ViT-L/14
+  download_root: /data/lizihao/.cache/clip
+  image_size: 256
+  train_per_label: 0
+  holdout_per_label: 0
+  train_variants:
+    - clean
+  holdout_variants:
+    - clean
+  eval_variants:
+    - clean
+  linear_c: 1.0
+
+residual_prior:
+  train_image_size: 256
+  inference_image_size: null
+  selected_epoch: 1
+  epochs: 2
+  max_samples_per_label: 0
+  random_state: 100
+  lr: 0.0002
+  weight_decay: 0.0
+
+composition:
+  tile_mode: top1
+  tile_size: 256
+  tile_grid_size: 3
+  beta: 0.25
+  alpha_low_pos: 0.30
+  alpha_low_neg: 0.1875
+  alpha_high_pos: 0.40
+  alpha_high_neg: 0.00
+  alpha_high_neg_guard: 0.25
+  tile_delta_threshold: 0.00
+  high_res_threshold: 960.0
+  gamma: 0.21
+  threshold: 0.50
+
+selection:
+  source_only: true
+  protocol: pure_source_stress_calibration
+  parameter_protocol: results/main/pure_source_stress_calibration/selection_protocol.json
+  base_anchor_protocol: results/main/source_gamma_selection/selection_protocol.json
+  selected_scales:
+    tile_scale: 1.25
+    semantic_pos_scale: 2.00
+    semantic_neg_scale: 1.25
+    residual_scale: 1.75
+  gamma_grid: [0.12, 0.18, 0.21, 0.24]
+  beta_grid: [0.20, 0.25, 0.30, 0.35]
+  alpha_grid: [0.15, 0.1875, 0.25, 0.30, 0.40]
+  target_labels_used: false
+  target_labels_role: source_gate_stress_calibration
+  external_confirmation_role: report_only
+
+evaluation:
+  per_label: 0
+  full_target: true
+
+runtime:
+  scoring_mode: equivalent_fast
+  artifact_batch_size: 64
+  semantic_batch_size: 32
+  residual_batch_size: 32
+  residual_eval_batch_size: 64
+  artifact_forward_batch_size: 64
+  num_workers: 4

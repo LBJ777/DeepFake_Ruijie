@@ -1,0 +1,23 @@
+{
+  "current17_report": "results/apfreq_full_target",
+  "fixed_snapshot": "FreqPRISM/fixed_threshold_snapshot_20260526_202901",
+  "main_fusion_parameters": "results/main/main_fusion_parameters/folded_weights.json",
+  "main_method": "FreqPRISM pure source-only stress-calibrated fusion",
+  "notes": [
+    "Final decision threshold remains 0.50.",
+    "The promoted fusion constants are folded directly into configs/apfreq_train100k_full.yaml and configs/freqprism_gpu_full.yaml.",
+    "The compact fusion scales are selected by source_gate_stress_only calibration with target_labels_used_for_selection=false.",
+    "Current17, UniversalFakeDetect, and Synthbuster are final-report benchmarks only.",
+    "The source-only gamma=0.12 anchor remains as the simpler target-label-free baseline."
+  ],
+  "parameter_protocol": "results/main/pure_source_stress_calibration/selection_protocol.json",
+  "parameter_candidate_table": "results/main/pure_source_stress_calibration/source_stress_candidates.csv",
+  "project": "FreqPRISM",
+  "source_gamma_anchor": "results/main/source_gamma_selection/selection_protocol.json",
+  "source_gamma_candidates": "results/main/source_gamma_selection/candidates.csv",
+  "source_gate_split": "results/main/source_gate_split",
+  "source_stress_calibration": "results/main/pure_source_stress_calibration",
+  "synthbuster_report": "results/experiments/phase3_external_benchmarks/synthbuster_learned_gates",
+  "universalfakedetect_component_cache": "results/experiments/phase3_external_benchmarks/universalfakedetect_components",
+  "universalfakedetect_report": "results/experiments/phase3_external_benchmarks/universalfakedetect_learned_gates"
+}

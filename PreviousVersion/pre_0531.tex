@@ -1,0 +1,366 @@
+\documentclass[lettersize,journal]{IEEEtran}
+
+% Mathematics
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{mathtools}
+
+% Tables
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{colortbl}
+
+% Figures and graphics
+\usepackage{graphicx}
+\usepackage[caption=false,font=normalsize,labelfont=sf,textfont=sf]{subfig}
+\usepackage{rotating}
+\usepackage{stfloats}
+
+% Algorithms
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+% Symbols and utilities
+\usepackage{textcomp}
+\usepackage{pifont}
+\usepackage{afterpage}
+\usepackage{balance}
+\usepackage{verbatim}
+\usepackage{xcolor}
+\usepackage{url}
+
+% Citations and references
+\usepackage{cite}
+
+% Hyperlinks
+\usepackage{hyperref}
+\hypersetup{
+    linktocpage=true,
+    pdfborderstyle={/S/S/W 1},
+    hyperindex=true,
+    bookmarks=false,
+    bookmarksopen=false,
+    bookmarksnumbered=false
+}
+
+% Paths for manuscript assets.
+\graphicspath{{Fig/}{Plot/}{Appendix/Fig/}}
+
+% Hyphenation
+\hyphenation{op-tical net-works semi-conduc-tor IEEE-Xplore}
+
+% Compatibility fixes
+\let\Bbbk\relax
+
+\begin{document}
+
+\title{Paper Title}
+
+\author{Author~Name,
+        Second~Author,
+        and~Third~Author%
+\thanks{Author Name is with Affiliation, City, Country (e-mail: author@example.com).}
+\thanks{Manuscript received Month Day, Year; revised Month Day, Year.}}
+
+\markboth{IEEE Transactions on Journal Name,~Vol.~XX, No.~XX, Month~Year}%
+{Author \MakeLowercase{\textit{et al.}}: Paper Title}
+
+\maketitle
+
+\begin{abstract}
+Write a concise summary of the problem, method, main results, and significance.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Keyword one, keyword two, keyword three, keyword four.
+\end{IEEEkeywords}
+
+\section{Introduction}
+\IEEEPARstart{A}{I}-generated images have become increasingly diverse as generative models evolve from adversarial synthesis to diffusion and text-conditioned generation~\cite{goodfellow2014gan,karras2019stylegan,ho2020ddpm,dhariwal2021diffusion,rombach2022ldm}. Modern systems can synthesize realistic faces, objects, scenes, and artwork under a wide range of prompts and post-processing pipelines. This progress expands creative applications, but it also makes image authenticity harder to assess from pixels alone. AI-generated image detection therefore has to operate in a setting where both generators and visual content distributions change over time.
+
+This paper studies image-level detection from RGB pixels. Given an image, the detector must assign a fake score without relying on generator internals, prompts, provenance metadata, or watermarks at test time. This setting is deliberately narrower than full media provenance, but it remains important because many shared images arrive without trusted side information. The practical question is not only whether a detector can recognize a known generator, but whether its score remains meaningful when the synthesis process and post-processing pipeline differ from those seen during development.
+
+The central difficulty is cross-generator generalization. A detector trained on one source generator can perform well when target images contain similar artifacts, yet fail when the generator architecture, image content, resolution, compression, or degradation pipeline changes. Early cross-generator studies showed that ProGAN-trained classifiers can transfer to several unseen CNN-based generators when training and preprocessing are carefully designed~\cite{wang2020cnnspot}. Later work broadened the setting to vision-language feature spaces, diffusion models, commercial generators, challenging user-curated images, and real-world degradations~\cite{ojha2023univfd,zhu2023genimage,yan2025aide,li2025rrdataset}. These studies make generalization, rather than in-domain accuracy alone, the central requirement for deployable detection.
+
+Existing detectors approach this requirement through different evidence sources. Spatial classifiers and texture methods learn visual artifacts left by synthesis pipelines~\cite{wang2020cnnspot,liu2020gramnet,zhong2023patchcraft}. Frequency and statistical methods search for traces in spectral, noise, color, bit-plane, or photographic regularities~\cite{frank2020frequency,liu2022realimages,karageorgiou2025spai,zhong2025beyond,wang2025lota}. Residual, gradient, and reconstruction methods expose generated images through model gradients, upsampling residuals, diffusion reconstruction, autoencoder reconstruction, or inversion behavior~\cite{tan2023lgrad,tan2024npr,wang2023dire,ricker2024aeroblade,luo2024lare2,cazenavette2024fakeinversion}. Semantic and foundation-model detectors use pretrained representations, such as CLIP, to improve transfer beyond the source generator~\cite{radford2021clip,ojha2023univfd,cozzolino2024clip}.
+
+Recent top-conference work shows that the field is moving beyond a single artifact family. Bias-free training and information-bottleneck objectives reduce source-data shortcuts~\cite{guillaro2025biasfree,zhang2025vibnet}. Any-resolution spectral learning, bit-plane modeling, real-image distribution modeling, camera-metadata supervision, and color-correlation training seek low-level cues that are less dependent on one generator family~\cite{karageorgiou2025spai,wang2025lota,liu2022realimages,zhong2025beyond,zhong2026metadata,zhong2026color}. At the same time, hybrid detectors combine semantic, pixel-level, generative, or multi-expert cues to improve transfer~\cite{yan2025aide,cheng2025cospy,tan2026mcan,li2026synerdetect}. This progress suggests that generated-image detection is best viewed as a multi-prior problem, rather than as a search for one universal trace.
+
+However, multi-prior detection introduces a second challenge. Low-level artifacts can be generator-specific or altered by resizing and compression; semantic features can transfer across content categories but may miss subtle synthesis traces; reconstruction scores can be informative but inherit assumptions from the inverse process, autoencoder, or diffusion prior that defines the residual. Combining these cues can improve robustness, but it also creates choices about score normalization, fusion weights, checkpoints, and thresholds. If those choices are tuned with target labels, a cross-generator benchmark becomes a validation set rather than a report-only test.
+
+Evaluation protocol is therefore part of the technical problem. Benchmarks and sanity-check studies show that detector behavior can change across datasets, generator families, image degradations, challenge sets, and calibration choices~\cite{yan2023deepfakebench,zhu2023genimage,yan2025aide,li2025rrdataset,yang2026calibrated}. In this setting, target labels are often available during analysis and can unintentionally influence thresholds, fusion weights, score variants, or the subset of generators emphasized in a paper. For cross-generator detection, how a detector is selected can be as important as what detector is selected.
+
+We propose FreqPRISM, a source-only multi-prior detector for AI-generated image detection. FreqPRISM integrates four complementary scores: a whole-image artifact score from explicit low-level statistics, a native-tile artifact score that preserves local high-resolution evidence, a semantic score from a frozen CLIP image encoder with a source-fitted linear probe, and a residual score from nearest-neighbor down-up reconstruction traces. The components are fused in logit space with constants selected from source data only, and the operating threshold is fixed at $0.50$ before target reporting. Target labels are used only after the detector is locked.
+
+The resulting pipeline is designed to make prior integration auditable. The artifact prior anchors the detector in explicit low-level evidence; the tile pathway preserves localized high-resolution traces; the semantic prior supplies representation-level transfer; and the residual prior contributes a controlled correction signal. We evaluate the locked detector on a 17-generator benchmark, analyze the role of each prior through component and artifact-family ablations, examine fusion sensitivity, and report transfer to an external UniversalFakeDetect benchmark. These experiments test not only ranking quality, but also fixed-threshold behavior and calibration under domain shift.
+
+Our contributions are summarized as follows:
+\begin{itemize}
+    \item We formulate FreqPRISM as a source-only prior-integration detector for cross-generator AI-generated image detection, with target labels reserved for report-only evaluation.
+    \item We combine whole-image artifact, native-tile artifact, frozen-CLIP semantic, and nearest-neighbor down-up residual evidence into one fixed-threshold fake score.
+    \item We define a source-only stress-calibrated logit fusion protocol that fixes fusion constants and the decision threshold before target evaluation.
+    \item We provide component-level analyses on a 17-generator benchmark and an external UniversalFakeDetect report, while explicitly identifying calibration and domain-shift boundaries.
+\end{itemize}
+
+\section{Related Work}
+\label{sec:related_work}
+
+AI-generated image detection has been approached from several complementary perspectives. Representative work spans spatial artifacts~\cite{wang2020cnnspot,liu2020gramnet,zhong2023patchcraft}, frequency and photographic statistics~\cite{frank2020frequency,liu2022realimages,zhong2025beyond}, residual or reconstruction cues~\cite{tan2023lgrad,tan2024npr,wang2023dire}, and semantic or hybrid representations~\cite{radford2021clip,ojha2023univfd,yan2025aide,cheng2025cospy}. We organize the section by these signal families, then review benchmark and calibration studies that shape how cross-generator performance should be interpreted.
+
+\subsection{Spatial and Texture Artifact Detectors}
+Generated-image detection was initially shaped by the observation that synthesis pipelines leave learnable spatial artifacts. CNNSpot showed that a standard classifier trained on ProGAN images, with appropriate augmentation and preprocessing, can transfer to several unseen CNN-based generators~\cite{wang2020cnnspot}. This result established a common source-generator protocol for later work, but it also exposed a central risk: a detector may learn the artifacts and data biases of its source generator rather than a durable notion of photographic authenticity. Subsequent spatial and texture-oriented detectors made this artifact view more structured. GramNet uses global texture statistics for fake-face detection~\cite{liu2020gramnet}, and PatchCraft focuses on local texture patches and rich/poor texture contrast for efficient AI-generated image detection~\cite{zhong2023patchcraft}. More recent efforts explicitly attack the generalization problem, for example by reducing training-data bias in synthetic-image generation protocols~\cite{guillaro2025biasfree} or suppressing task-irrelevant information with variational information bottlenecks~\cite{zhang2025vibnet}. The common lesson is that artifacts are real and useful, but the exact artifact learned by a supervised detector is entangled with source data, augmentations, and generator family. This makes artifact supervision an important starting point rather than a complete solution to open-generator detection.
+
+\subsection{Frequency and Photographic Statistics}
+Frequency and low-level statistical cues provide a complementary route to generated-image detection. A first group of methods searches for artifacts that generative models fail to reproduce in the signal domain. Frank \emph{et al.} showed that GAN-generated images contain strong spectral artifacts caused in part by upsampling operations~\cite{frank2020frequency}, while later dual-frequency, spectral, and bit-plane approaches enrich local forgery cues through wavelet, Fourier, or related representations~\cite{yan2025dffreq,karageorgiou2025spai,wang2025lota}. A second group reverses the premise and anchors detection on the distribution of photographic images. Detecting Generated Images by Real Images models noise and frequency patterns of real images for cross-generator authentication~\cite{liu2022realimages}, and its real-image-only extension pushes this idea closer to one-class detection~\cite{bi2023realonly}. Beyond Generation uses a diffusion model as a low-level feature extractor and estimates the real-image feature distribution~\cite{zhong2025beyond}, while ID-energy detection frames synthetic patterns as out-of-distribution samples relative to natural-image patterns~\cite{cai2025generalizable}. Other recent work exploits camera-side regularities through EXIF-induced self-supervision~\cite{zhong2026metadata} or demosaicing-guided color correlation training~\cite{zhong2026color}. These methods seek cues that are less tied to a specific generator than RGB classifiers. Their boundary is also clear, because low-level statistics can be influenced by compression, resizing, camera pipelines, and rendering choices.
+
+\subsection{Gradient, Residual, and Reconstruction Cues}
+Another important line of work detects generated images through gradients, residuals, reconstruction errors, or diffusion-model behavior. LGrad maps images to gradients of a pretrained model to obtain a more general artifact representation~\cite{tan2023lgrad}, while NPR re-examines upsampling operations in CNN-based generators and models neighboring-pixel relationships as structural artifacts shared across GAN and diffusion images~\cite{tan2024npr}. For diffusion-generated images, DIRE uses diffusion reconstruction error as evidence of synthesis~\cite{wang2023dire}. AEROBLADE uses autoencoder reconstruction error for training-free latent-diffusion image detection~\cite{ricker2024aeroblade}, LaRE\textsuperscript{2} moves the reconstruction-error signal into latent space~\cite{luo2024lare2}, and FakeInversion learns to detect images from unseen text-to-image models by inverting Stable Diffusion~\cite{cazenavette2024fakeinversion}. Recent zero-shot methods further exploit generative-model biases without training a conventional binary detector. RIGID proposes a model-agnostic training-free framework~\cite{he2024rigid}, manifold-induced bias analysis uses score-function geometry for zero-shot and few-shot detection~\cite{brokman2025manifold}, and denoising trajectory bias compares real and generated images along simulated diffusion denoising paths~\cite{liang2025trajectory}. This line of work is strong because it ties detection to behavior that may not be visible in RGB space. Its risk is also sharper than in generic artifact detection: reconstruction scores can inherit assumptions from the chosen inverse process, autoencoder, or diffusion prior. For general-purpose detection, residual evidence is therefore most useful when it is treated as one cue among others rather than as a complete proxy for image origin.
+
+\subsection{Semantic and Hybrid Detectors}
+Foundation models have shifted the field from detector-specific feature learning toward transferable representation spaces. CLIP provides large-scale vision-language features that transfer across many visual tasks~\cite{radford2021clip}. UnivFD showed that simple nearest-neighbor or linear-probe rules in a pretrained vision-language feature space can generalize across generator families better than conventional real-vs-fake classifiers trained on one fake source~\cite{ojha2023univfd}. Follow-up CLIP-based detection work found that only a small number of examples from one generative model can produce strong out-of-distribution and robustness performance~\cite{cozzolino2024clip}. The appeal of this paradigm is that the feature space is not learned solely to separate one set of real images from one set of fake images. However, semantic representations do not remove the need for low-level evidence. AIDE combines CLIP-level semantics with low-level patch features and reports that challenging generated images remain difficult for off-the-shelf detectors~\cite{yan2025aide}. CO-SPY also combines semantic and pixel-level features~\cite{cheng2025cospy}, MCAN aggregates multiple cue experts~\cite{tan2026mcan}, and SynerDetect aligns perceptual and generative forensic representations in a unified detection space~\cite{li2026synerdetect}. The field is therefore moving from single-feature detectors toward hybrid evidence, but hybridization introduces its own question of score fusion and threshold selection.
+
+\subsection{Benchmarks and Calibration Protocols}
+As generators diversify, evaluation protocol has become as important as detector design. GenImage provides a million-scale benchmark with cross-generator and degraded-image settings~\cite{zhu2023genimage}, and DeepfakeBench emphasizes standardized pipelines for comparing deepfake detectors~\cite{yan2023deepfakebench}. AIDE's Chameleon analysis argues that many detectors still fail on visually challenging generated images despite good performance on established benchmarks~\cite{yan2025aide}. Recent real-world robustness benchmarks further show that detector behavior can change under scenario shift, image degradation, and semantically diverse content~\cite{li2025rrdataset}. Calibration is another protocol risk: a detector can look weak or strong depending on threshold and score calibration, and recent work shows that appropriate calibration can substantially change reported accuracy~\cite{yang2026calibrated}. These benchmark studies highlight the need to separate detector design from evaluation assumptions: high benchmark accuracy is not sufficient if the score, threshold, or model variant is selected using target information. Prior work provides strong single-signal detectors, increasingly broad benchmarks, and several hybrid cue designs, but the protocol for integrating complementary cues remains under-specified. This motivates studying source-only integration of artifact, semantic, and residual priors, where target labels are reserved for reporting rather than detector selection.
+
+\section{Method}
+\label{sec:method}
+
+\subsection{Detection Setting and Source-Only Protocol}
+\label{sec:problem_formulation}
+
+We begin by defining the detection setting and the source-only rule that constrains all later design choices.
+
+\textbf{Task definition.}
+We study binary detection of AI-generated images. Given an RGB image $x \in \mathcal{X}$, the label $y \in \{0,1\}$ indicates whether the image is real ($y=0$) or generated by an AI model ($y=1$). A detector produces a scalar fake score
+\begin{equation}
+    f(x) \in [0,1],
+\end{equation}
+where larger values indicate stronger evidence that $x$ is generated. Unless stated otherwise, the final decision uses a fixed operating threshold
+\begin{equation}
+    \hat{y}(x) = \mathbb{I}\left[f(x) \geq 0.50\right].
+\end{equation}
+This fixed-threshold rule is part of the evaluated detector rather than a post-hoc choice made on a target benchmark.
+
+\textbf{Source and target domains.}
+Let $\mathcal{D}_{s}=\{(x_i^s,y_i^s)\}_{i=1}^{n_s}$ denote the source data available before deployment. In our implementation, the source data come from the ProGAN training split with balanced real and generated images. We separate source use into two auditable roles: source-fitted component training, denoted by $\mathcal{D}_{s}^{\mathrm{fit}}$ when a fit/gate split is explicitly materialized, and a recorded source-gate subset $\mathcal{D}_{s}^{\mathrm{gate}}$ used to select fusion constants from cached component scores. The recorded materialization uses seed 100 and assigns 80,000 source images to the fit role and 20,000 to the gate role, with 2,000 fit and 500 gate images for each class-label cell. The promoted runtime checkpoints are therefore described as source-fitted checkpoints, while the promoted fusion constants are source-gate selected. Let $\mathcal{D}_{t}^{g}=\{(x_i^{t,g},y_i^{t,g})\}_{i=1}^{n_g}$ denote a report-only target set associated with a generator or benchmark condition $g$. The target domain may differ from the source domain in generator architecture, image content, synthesis pipeline, resolution, and post-processing. The goal is therefore not in-domain source accuracy alone, but transfer of a locked detector from $\mathcal{D}_{s}$ to unseen target generators $\mathcal{G}_{t}$.
+
+\textbf{Source-only selection rule.}
+The central protocol constraint is that all detector choices must be made without target labels. Source labels may be used to fit detector priors, fit the CLIP linear probe, choose the residual checkpoint from source-side training records, and select fusion constants on $\mathcal{D}_{s}^{\mathrm{gate}}$. The operating threshold is fixed in advance at $0.50$ and is not tuned on target data. Target labels are used only after the detector is locked, to compute evaluation metrics. In particular, target labels must not determine prior training, epoch or checkpoint choice, fusion weights, score normalization, threshold selection, generator subset selection, or which score variant is reported. This rule treats target benchmarks as diagnostics of transfer rather than as validation sets for detector selection.
+
+\textbf{Evaluation setting and scope.}
+For each target generator or benchmark condition, we report ranking metrics such as average precision and area under the receiver operating characteristic curve, together with fixed-threshold metrics computed at $\tau=0.50$. This separation is important because a detector can rank real and generated images well while still requiring a different operating threshold under domain shift. We evaluate image-level binary authenticity from RGB pixels. The formulation does not assume access to generator internals, prompts, provenance metadata, watermarks, or camera metadata at test time, and it does not address localized manipulation, model attribution, or face presentation attack detection.
+
+\subsection{Overview}
+\label{sec:method_overview}
+
+FreqPRISM is a source-only multi-prior detector for cross-generator fake-image detection. Its design is driven by a simple deployment constraint: after the detector is locked on the source domain, target labels must not change its component priors, fusion constants, operating threshold, or reported score variant. We therefore organize the method as a two-stage pipeline, illustrated in Fig.~\ref{fig:freqprism_overview}, that separates source-side locking from target-side inference.
+
+In the locking stage, source-fitted artifact, semantic, and residual priors are evaluated on a recorded source-gate split to build a component-score cache. This cache is used only to select compact fusion constants under the fixed threshold $\tau=0.50$, producing the detector that will be deployed. In the inference stage, the locked detector maps each image to four scalar cues: whole-image artifact evidence, native-tile artifact evidence, CLIP semantic evidence, and nearest-neighbor residual evidence. These cues are combined in logit space with the locked constants, so target benchmarks serve only as report-time evaluations rather than validation sets.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{Fig/freqprism_overview_placeholder.png}
+\caption{Overview of FreqPRISM. The upper branch shows source-only locking: source-fitted priors produce a source-gate component cache, from which compact fusion constants are selected under a fixed threshold. The lower branch shows locked inference: an input image is scored by whole-image artifact, native-tile artifact, semantic, and residual priors, then fused in logit space to produce the final fake score and fixed-threshold decision.}
+\label{fig:freqprism_overview}
+\end{figure*}
+
+The remainder of this section follows this pipeline. Section~\ref{sec:method_scoring} defines the multi-prior scoring abstraction and the source-only locking routine. Section~\ref{sec:method_artifact} describes the artifact and tile priors, Sections~\ref{sec:method_semantic} and~\ref{sec:method_residual} describe the semantic and residual priors, and Section~\ref{sec:method_fusion} defines the final fusion rule and locked inference decision. Table~\ref{tab:component_priors} summarizes the component-level implementation choices that are fixed before inference.
+
+\begin{table*}[t]
+\caption{Source-Fitted Priors and Locked Score Construction in FreqPRISM}
+\label{tab:component_priors}
+\centering
+\footnotesize
+\renewcommand{\arraystretch}{1.12}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{p{0.14\textwidth}p{0.18\textwidth}p{0.26\textwidth}p{0.17\textwidth}p{0.16\textwidth}}
+\toprule
+Score & Input view & Source-fitted model & Locked preprocessing & Output role \\
+\midrule
+$W(x)$ & Whole-image artifact views & 849-dimensional explicit artifact features with codec histogram-gradient boosting and chroma logistic experts; artifact payload coefficient $\alpha_A=-0.40$ & Bicubic $256\times256$ clean, JPEG quality 35 and 50, half-scale resize, and Gaussian blur radius 1 views & Whole-image low-level authenticity score aggregated by mean logit \\
+$T(x)$ & Native image tiles & Same clean artifact branch as $W(x)$ & $256\times256$ tiles from a $3\times3$ native grid, with edge padding for boundary crops and top-1 aggregation & Positive local artifact increment relative to $W(x)$ \\
+$S(x)$ & CLIP clean view & Frozen OpenAI CLIP ViT-L/14 image encoder with a source-fitted standardized balanced logistic-regression probe, $C=1.0$ & Clean $256\times256$ image view with L2-normalized CLIP features & Signed semantic evidence in logit space \\
+$R(x)$ & Nearest-neighbor residual tensor & ResNet-50 binary residual prior trained on source data with binary cross-entropy for two epochs; runtime loads checkpoint 1 & RGB conversion, even-size crop, tensor conversion, ImageNet normalization, and nearest-neighbor down-up residual & Low-weight residual correction with coefficient $\gamma$ \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{Source-Only Multi-Prior Scoring}
+\label{sec:method_scoring}
+
+Under the source-only protocol, the detector must convert heterogeneous cues into one deployable score without using target labels for calibration or model selection. FreqPRISM therefore uses a fixed multi-prior scoring pipeline. For an input image $x$, four source-fitted components produce scalar scores: a whole-image artifact score $W(x)$ from explicit low-level artifact features, a native-tile artifact score $T(x)$ from local high-resolution evidence, a semantic score $S(x)$ from a frozen CLIP image encoder with a source-fitted linear probe, and a residual score $R(x)$ from a nearest-neighbor down-up reconstruction residual branch. We use these quantities as bounded component scores and map them to clipped logits only inside the fusion rule. The source-gate stress constraints limit score drift and fixed-threshold flips after fusion, rather than claiming that the heterogeneous component probabilities are perfectly calibrated across domains. The resulting locked fake score is denoted by $f(x)$.
+
+The four scores are not treated as interchangeable ensemble members. The whole-image artifact prior anchors the decision with low-level authenticity evidence; the native-tile pathway contributes only when local artifact evidence is stronger than the whole-image estimate; the semantic prior supplies signed representation-level evidence from a pretrained vision-language feature space; and the residual prior adds a controlled correction for nearest-neighbor down-up reconstruction traces. This design keeps the detector interpretable at the component level while preserving the protocol constraint that all fusion choices are fixed before target evaluation.
+
+Algorithm~\ref{alg:source_locking} summarizes how the fusion constants are selected before target evaluation. The algorithm operates only on the source-gate cache and the fixed threshold. It does not inspect target scores, target labels, or per-generator target summaries.
+
+\begin{algorithm}[t]
+\caption{Source-only fusion calibration}
+\label{alg:source_locking}
+\begin{algorithmic}[1]
+\REQUIRE Source-gate component cache $\mathcal{C}_{s}^{\mathrm{gate}}$, anchor constants $\theta_0$, scale grid $\mathcal{G}$, source constraints $\Omega_s$, fixed threshold $\tau=0.50$
+\ENSURE Locked fusion constants $\theta^\star$ and threshold $\tau$
+\STATE Load $\mathcal{C}_{s}^{\mathrm{gate}}=\{(W_i,T_i,S_i,R_i,m_i,y_i)\}$ from source-gate component scores.
+\STATE $\mathcal{A}\leftarrow\emptyset$
+\FOR{each $(s_T,s_{S+},s_{S-},s_R)\in\mathcal{G}^4$}
+    \STATE $\theta\leftarrow\textsc{FoldScales}(\theta_0,s_T,s_{S+},s_{S-},s_R)$
+    \STATE $f_i(\theta)\leftarrow\textsc{Fuse}(W_i,T_i,S_i,R_i,m_i;\theta)$ for each gate sample.
+    \STATE Compute source ranking, threshold, drift, flip-rate, and source log-loss metrics.
+    \IF{all constraints in $\Omega_s$ are satisfied}
+        \STATE Add $\theta$ and its source metrics to $\mathcal{A}$.
+    \ENDIF
+\ENDFOR
+\STATE Select $\theta^\star\in\mathcal{A}$ with minimum fake-side source log loss, breaking ties by anchor distance, real-side log loss, source log loss, and variant identifier.
+\RETURN $\theta^\star,\tau$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Artifact Prior and Native-Tile Evidence}
+\label{sec:method_artifact}
+
+The artifact prior converts explicit low-level image statistics into an image-level fake score. For an input image, we first construct a $256 \times 256$ artifact view and extract a feature vector $\phi(x)$. The feature extractor includes statistics from RGB-light, residual, high-pass, local-DCT, and global-FFT views, together with rich spatial statistics, texture artifacts, recompression stability, residual co-occurrence and spectrum, residual-tail shape, chroma-luma coupling, patch-spectrum heterogeneity, and codec-block statistics. In the current implementation, $\phi(x)$ has 849 dimensions. Two source-fitted experts are trained from source labels: a codec expert $C(\cdot)$, implemented as a histogram gradient boosting classifier on codec-block features, and a chroma expert $Q(\cdot)$, implemented as a standardized logistic regression probe on fine chroma-luma coupling features. Both experts output fake probabilities. The artifact training record uses expanded source variants consisting of clean images, two JPEG-quality-50 copies, half-scale resize, and Gaussian blur radius 1, with no target labels.
+
+For a probability $p$, let
+\begin{equation}
+    \ell(p)=\log \frac{p}{1-p}, \qquad
+    \sigma(z)=\frac{1}{1+\exp(-z)},
+\end{equation}
+with probabilities clipped to $[10^{-6},1-10^{-6}]$ in implementation. For each artifact evaluation variant $v \in \mathcal{V}_{A}$, where $\mathcal{V}_{A}$ contains bicubic-resized clean, JPEG quality 35, JPEG quality 50, half-scale resized, and Gaussian-blurred $256 \times 256$ views, the artifact branch computes
+\begin{equation}
+    A_v(x)=\sigma\left(\ell(C(\phi(v(x))))+\alpha_A \ell(Q(\phi(v(x))))\right),
+\end{equation}
+where $\alpha_A=-0.40$ is fixed in the artifact-prior payload. The whole-image artifact score is the mean-logit aggregation
+\begin{equation}
+    W(x)=\sigma\left(\frac{1}{|\mathcal{V}_{A}|}\sum_{v\in\mathcal{V}_{A}}\ell(A_v(x))\right).
+\end{equation}
+This aggregation uses perturbation views to stabilize the low-level score against common compression and resizing changes. The artifact experts are fitted from the expanded source variants recorded in the training protocol and do not use target images or target labels.
+
+Whole-image resizing can dilute local high-resolution artifacts. FreqPRISM therefore computes a native-tile artifact score in parallel. If both image sides are no larger than the tile size, the tile branch uses one RGB crop covering the image and pads it by edge replication to $256 \times 256$ when necessary. Otherwise, the image is cropped into native-resolution $256 \times 256$ tiles from a $3 \times 3$ grid whose start positions include both image boundaries on each axis. Boundary tiles smaller than $256 \times 256$ are padded by edge replication before scoring. Each tile is scored by the clean artifact branch, and the image-level tile score is
+\begin{equation}
+    T(x)=\max_{j} A_{\mathrm{clean}}(t_j),
+\end{equation}
+where $\{t_j\}$ are the extracted native tiles. Tile evidence enters the fused detector only as a positive logit increment over the whole-image score:
+\begin{equation}
+    \Delta_T(x)=\max\left(0,\ell(T(x))-\ell(W(x))\right).
+\end{equation}
+This design lets a strong local artifact increase fake evidence while preventing low-scoring tiles from suppressing a reliable whole-image artifact score.
+
+\subsection{Semantic Prior}
+\label{sec:method_semantic}
+
+The semantic prior supplies representation-level evidence that is not learned from low-level artifact statistics alone. We use a frozen CLIP ViT-L/14 image encoder~\cite{radford2021clip}. The CLIP encoder is not fine-tuned. Given an image $x$, the frozen encoder produces an image representation
+\begin{equation}
+    z(x)=E_{\mathrm{CLIP}}(x).
+\end{equation}
+A source-only logistic regression probe $g_S$ is then fitted using CLIP features and source labels. The semantic fake score is
+\begin{equation}
+    S(x)=\sigma(g_S(z(x))).
+\end{equation}
+The probe uses L2-normalized CLIP features, a standardization layer, and a balanced logistic regression classifier with fixed regularization $C=1.0$ on the clean image view. The training script records source-side diagnostic metrics for the probe, but these diagnostics are not used to choose the CLIP backbone, regularization, score variant, fusion constants, or threshold. Target labels are not used to choose the CLIP backbone, the probe regularization, the score variant, or the final semantic contribution. In the fusion rule, $S(x)$ is treated as signed evidence: positive semantic logits support the fake class, while negative semantic logits support the real class. Separate coefficients are used for positive and negative semantic evidence because their calibration roles differ under domain shift.
+
+\subsection{Residual Prior}
+\label{sec:method_residual}
+
+The residual prior adds a correction signal based on nearest-neighbor down-up traces. This branch follows the observation that neighboring-pixel and upsampling residuals expose artifacts that may not be captured by RGB classifiers alone~\cite{tan2024npr}. Let $\tilde{x}$ denote the residual-branch tensor after RGB conversion, even-size cropping, tensor conversion, and ImageNet normalization. During training, $\tilde{x}$ is resized to $256 \times 256$; in the locked inference configuration, the residual branch uses the native even-cropped resolution. Let $D_{\mathrm{nn}}$ and $U_{\mathrm{nn}}$ denote nearest-neighbor downsampling and upsampling by a factor of two. The residual input is
+\begin{equation}
+    \rho(x)=\tilde{x}-U_{\mathrm{nn}}(D_{\mathrm{nn}}(\tilde{x})).
+\end{equation}
+A ResNet-50 binary classifier $g_R$ maps this residual tensor to a fake logit, and the residual score is
+\begin{equation}
+    R(x)=\sigma(g_R(\rho(x))).
+\end{equation}
+The residual model is trained on source images for two epochs with binary cross-entropy, and the locked runtime configuration uses the epoch-1 checkpoint. This checkpoint choice is part of the source-side configuration record and is fixed before any target report is generated. In the final detector, the residual branch is not used as a standalone classifier. It enters only through the low-weight logit correction in Section~\ref{sec:method_fusion}, which limits the influence of residual scores that may vary with the reconstruction operator and preprocessing resolution.
+
+\subsection{Source-Only Fusion and Inference}
+\label{sec:method_fusion}
+
+FreqPRISM fuses the four prior scores in logit space. Let $m(x)$ indicate whether $x$ is high resolution, defined by maximum side length greater than 960 pixels, and let $\Delta_T(x)$ be the positive tile increment defined above. The semantic coefficient for positive evidence is
+\begin{equation}
+    \alpha_{+}(x)=
+    \begin{cases}
+    \alpha_{\mathrm{high}+}, & m(x)=1,\\
+    \alpha_{\mathrm{low}+}, & m(x)=0,
+    \end{cases}
+\end{equation}
+and the semantic coefficient for negative evidence is
+\begin{equation}
+    \alpha_{-}(x)=
+    \begin{cases}
+    \alpha_{\mathrm{high}-}, & m(x)=1 \ \mathrm{and}\ \Delta_T(x)>0,\\
+    \alpha_{\mathrm{high}-}^{\mathrm{guard}}, & m(x)=1 \ \mathrm{and}\ \Delta_T(x)\leq 0,\\
+    \alpha_{\mathrm{low}-}, & m(x)=0.
+    \end{cases}
+\end{equation}
+The semantic logit contribution is
+\begin{equation}
+    \Psi_S(x)=\alpha_{+}(x)\max(0,\ell(S(x)))+
+    \alpha_{-}(x)\min(0,\ell(S(x))).
+\end{equation}
+The base score before residual correction is
+\begin{equation}
+    B(x)=\sigma\left(\ell(W(x))+\beta \Delta_T(x)+\Psi_S(x)\right),
+\end{equation}
+and the final fake score is
+\begin{equation}
+    f(x)=\sigma\left(\ell(B(x))+\gamma \ell(R(x))\right).
+\end{equation}
+
+The fusion rule separates its functional form from its locked numerical instantiation. We select the constants once from source-gate component scores and source labels only, using the search in Algorithm~\ref{alg:source_locking}. The source-gate search uses the compact scale grid $\{0.75,1.00,1.25,1.50,1.75,2.00\}$ for the tile, positive semantic, negative semantic, and residual terms. A candidate is accepted only if it satisfies the source BA, AP, AUC, fixed-threshold flip-rate, mean-drift, and real-side log-loss constraints defined in the source-locking record. This search accepts 231 of 1,296 compact-scale candidates and selects the candidate with tile scale 1.25, positive semantic scale 2.00, negative semantic scale 1.25, and residual scale 1.75 relative to the source-gamma anchor. After folding these scales into the runtime configuration, the selected configuration uses $\beta=0.25$ for the tile increment and $\gamma=0.21$ for the residual correction. For semantic evidence, it uses $\alpha_{\mathrm{low}+}=0.30$ and $\alpha_{\mathrm{low}-}=0.1875$ on low-resolution images, and $\alpha_{\mathrm{high}+}=0.40$, $\alpha_{\mathrm{high}-}=0.00$, and $\alpha_{\mathrm{high}-}^{\mathrm{guard}}=0.25$ on high-resolution images. These values are fixed before any target report is generated.
+
+The final decision is
+\begin{equation}
+    \hat{y}(x)=\mathbb{I}\left[f(x)\geq 0.50\right],
+\end{equation}
+where the threshold is not tuned on target generators. Thus the target benchmarks evaluate a locked detector, rather than selecting fusion parameters, score variants, or an operating point. Algorithm~\ref{alg:locked_inference} summarizes the complete locked inference procedure for a test image.
+
+\begin{algorithm}[t]
+\caption{Locked multi-prior scoring}
+\label{alg:locked_inference}
+\begin{algorithmic}[1]
+\REQUIRE Image $x$, locked priors $\mathcal{P}$, locked constants $\theta^\star$, fixed threshold $\tau=0.50$
+\ENSURE Fake score $f(x)$ and binary decision $\hat{y}(x)$
+\STATE Compute whole-image artifact score $W(x)$ by mean-logit aggregation over $\mathcal{V}_A$.
+\STATE Extract native $256\times256$ tiles from $x$; use edge padding for boundary tiles when needed.
+\STATE Score each tile with the clean artifact branch and set $T(x)\leftarrow\max_j A_{\mathrm{clean}}(t_j)$.
+\STATE Compute semantic score $S(x)$ using frozen CLIP features and the source-fitted linear probe.
+\STATE Compute residual score $R(x)$ from nearest-neighbor down-up residuals.
+\STATE $\Delta_T(x)\leftarrow\max(0,\ell(T(x))-\ell(W(x)))$
+\STATE $m(x)\leftarrow\mathbb{I}[\max\mathrm{side}(x)>960]$
+\STATE Set $\alpha_+(x)$ from $m(x)$ and set $\alpha_-(x)$ using the high-resolution guard.
+\STATE $u_S\leftarrow\max(0,\ell(S(x)))$, \quad $v_S\leftarrow\min(0,\ell(S(x)))$
+\STATE $\Psi_S(x)\leftarrow\alpha_+(x)u_S+\alpha_-(x)v_S$
+\STATE $B(x)\leftarrow\sigma(\ell(W(x))+\beta\Delta_T(x)+\Psi_S(x))$
+\STATE $f(x)\leftarrow\sigma(\ell(B(x))+\gamma\ell(R(x)))$
+\STATE $\hat{y}(x)\leftarrow\mathbb{I}[f(x)\geq\tau]$
+\RETURN $f(x),\hat{y}(x)$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Experiments}
+\label{sec:experiments}
+This section describes datasets, baselines, implementation details, evaluation metrics, and experimental results.
+
+\subsection{Experimental Setup}
+\label{sec:experimental_setup}
+Describe the datasets, preprocessing, compared methods, and training or inference configuration.
+
+\subsection{Main Results}
+\label{sec:main_results}
+Report the main quantitative and qualitative results.
+
+\subsection{Ablation Study}
+\label{sec:ablation_study}
+Analyze the contribution of important components.
+
+\section{Discussion}
+\label{sec:discussion}
+Discuss limitations, broader implications, and possible future improvements.
+
+\section{Conclusion}
+\label{sec:conclusion}
+Summarize the main findings and contributions.
+
+\bibliographystyle{IEEEtran_doi}
+\bibliography{ref,uncited}
+
+\end{document}

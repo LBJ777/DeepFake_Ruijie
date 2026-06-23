@@ -1,0 +1,53 @@
+{
+  "component_dir": "/data/lizihao/FreqPRISM-main/results/phase2_current_params/component_cache/current17_components",
+  "method_name": "FreqPRISM source-only calibrated fusion weights",
+  "phase": "phase2_prior_ablation",
+  "target_labels_used_for_final_report_only": true,
+  "target_labels_used_for_selection": false,
+  "threshold": 0.5,
+  "variants": {
+    "A0_whole_artifact": {
+      "description": "whole-image artifact score W",
+      "name": "Whole artifact only"
+    },
+    "A1_artifact": {
+      "description": "whole artifact plus native tile delta",
+      "name": "Artifact only"
+    },
+    "A2_semantic": {
+      "description": "CLIP semantic prior score S",
+      "name": "Semantic only"
+    },
+    "A3_residual": {
+      "description": "NPR residual prior score R",
+      "name": "Residual only"
+    },
+    "A4_no_artifact": {
+      "description": "semantic prior blended with residual prior",
+      "name": "No artifact"
+    },
+    "A5_no_semantic": {
+      "description": "artifact prior blended with residual prior",
+      "name": "No semantic"
+    },
+    "A6_no_residual": {
+      "description": "artifact prior plus semantic prior",
+      "name": "No residual"
+    },
+    "A7_no_tile": {
+      "description": "whole artifact plus semantic and residual priors",
+      "name": "No tile"
+    },
+    "A8_full": {
+      "description": "source-only calibrated fusion weights",
+      "name": "Full FreqPRISM"
+    }
+  },
+  "weights": {
+    "residual_scale": 1.0,
+    "semantic_neg_scale": 1.0,
+    "semantic_pos_scale": 1.0,
+    "tile_scale": 1.0
+  },
+  "weights_json": "/data/lizihao/FreqPRISM-main/results/main/main_fusion_parameters/folded_weights.json"
+}

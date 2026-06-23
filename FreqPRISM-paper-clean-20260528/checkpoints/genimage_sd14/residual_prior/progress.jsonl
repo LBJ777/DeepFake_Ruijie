@@ -1,0 +1,2 @@
+{"checkpoint": "/data/lizihao/FreqPRISM-main/checkpoints/genimage_sd14/residual_prior/checkpoint-0.pth", "epoch": 0, "target_labels_used": false, "train_loss": 0.08467143698624209}
+{"checkpoint": "/data/lizihao/FreqPRISM-main/checkpoints/genimage_sd14/residual_prior/checkpoint-1.pth", "epoch": 1, "target_labels_used": false, "train_loss": 0.027546134433988265}

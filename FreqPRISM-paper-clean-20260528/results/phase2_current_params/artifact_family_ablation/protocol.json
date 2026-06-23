@@ -1,0 +1,147 @@
+{
+  "component_dir": "/data/lizihao/FreqPRISM-main/results/phase2_current_params/component_cache/current17_components",
+  "config": "configs/apfreq_train100k_full.yaml",
+  "family_component_cache": "/data/lizihao/FreqPRISM-main/results/phase2_current_params/artifact_family_ablation/family_component_cache",
+  "feature_family_slices": {
+    "AF1_no_codec_block": [
+      [
+        681,
+        849
+      ]
+    ],
+    "AF2_no_chroma_luma": [
+      [
+        622,
+        660
+      ]
+    ],
+    "AF3_no_texture": [
+      [
+        274,
+        415
+      ]
+    ],
+    "AF4_no_recompression": [
+      [
+        415,
+        436
+      ],
+      [
+        436,
+        457
+      ],
+      [
+        457,
+        478
+      ],
+      [
+        415,
+        478
+      ]
+    ],
+    "AF5_no_residual_spectrum": [
+      [
+        578,
+        600
+      ]
+    ],
+    "AF6_no_residual_tail": [
+      [
+        600,
+        622
+      ]
+    ],
+    "AF7_no_patch_heterogeneity": [
+      [
+        660,
+        681
+      ]
+    ],
+    "AF8_codec_block_only": [
+      [
+        681,
+        849
+      ]
+    ],
+    "AF9_spectrum_only": [
+      [
+        578,
+        600
+      ],
+      [
+        660,
+        681
+      ]
+    ]
+  },
+  "groups": [
+    "ADM",
+    "DALLE2",
+    "Glide",
+    "Midjourney",
+    "VQDM",
+    "biggan",
+    "coco_sdxl_nw",
+    "cyclegan",
+    "gaugan",
+    "progan",
+    "stable_diffusion_v_1_4",
+    "stable_diffusion_v_1_5",
+    "stargan",
+    "stylegan",
+    "stylegan2",
+    "whichfaceisreal",
+    "wukong"
+  ],
+  "image_batch_size": 128,
+  "max_images_per_group": 0,
+  "phase": "phase2_artifact_family_ablation",
+  "source_median_max_images": 512,
+  "source_root": "/data/lizihao/FreqPRISM-main/dataset/train_100k/progan_train",
+  "target_labels_used_for_final_report_only": true,
+  "target_labels_used_for_selection": false,
+  "threshold": 0.5,
+  "variants": {
+    "AF0_full_artifact_features": {
+      "description": "current artifact prior",
+      "name": "Full artifact features"
+    },
+    "AF1_no_codec_block": {
+      "description": "mask codec_block family",
+      "name": "No codec/block"
+    },
+    "AF2_no_chroma_luma": {
+      "description": "mask chroma_luma_coupling family",
+      "name": "No chroma-luma"
+    },
+    "AF3_no_texture": {
+      "description": "mask texture_artifact family",
+      "name": "No texture"
+    },
+    "AF4_no_recompression": {
+      "description": "mask all recompression_* families",
+      "name": "No recompression"
+    },
+    "AF5_no_residual_spectrum": {
+      "description": "mask residual_spectrum family",
+      "name": "No residual spectrum"
+    },
+    "AF6_no_residual_tail": {
+      "description": "mask residual_tail_shape family",
+      "name": "No residual tail"
+    },
+    "AF7_no_patch_heterogeneity": {
+      "description": "mask patch_spectrum_heterogeneity family",
+      "name": "No patch heterogeneity"
+    },
+    "AF8_codec_block_only": {
+      "description": "keep codec_block and mask all other artifact families",
+      "name": "Codec/block only"
+    },
+    "AF9_spectrum_only": {
+      "description": "keep spectrum-related families and mask all others",
+      "name": "Spectrum only"
+    }
+  },
+  "weights_json": "/data/lizihao/FreqPRISM-main/results/main/main_fusion_parameters/folded_weights.json"
+}

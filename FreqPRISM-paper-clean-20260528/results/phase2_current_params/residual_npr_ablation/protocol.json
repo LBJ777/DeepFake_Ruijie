@@ -1,0 +1,59 @@
+{
+  "component_dir": "/data/lizihao/FreqPRISM-main/results/phase2_current_params/component_cache/current17_components",
+  "config": "configs/apfreq_train100k_full.yaml",
+  "gamma_scales": [
+    0.0,
+    0.5,
+    1.0,
+    1.5,
+    2.0
+  ],
+  "note": "Component-cache post-hoc ablation covers residual drop/only/combinations/gamma sweep. NPR energy-only requires image-level residual feature extraction.",
+  "phase": "phase2_residual_npr_ablation",
+  "target_labels_used_for_final_report_only": true,
+  "target_labels_used_for_selection": false,
+  "threshold": 0.5,
+  "variants": {
+    "RP0_full_residual_prior": {
+      "description": "current gamma * R correction",
+      "name": "Full residual prior"
+    },
+    "RP1_no_residual": {
+      "description": "set gamma to zero",
+      "name": "No residual"
+    },
+    "RP2_residual_only": {
+      "description": "use residual prior score R alone",
+      "name": "Residual only"
+    },
+    "RP3_artifact_residual": {
+      "description": "remove semantic prior S",
+      "name": "Artifact + residual"
+    },
+    "RP4_semantic_residual": {
+      "description": "remove artifact prior W/T",
+      "name": "Semantic + residual"
+    },
+    "RP6_gamma_scale_0p00": {
+      "description": "multiply residual correction by 0.00",
+      "name": "Gamma scale 0.00"
+    },
+    "RP6_gamma_scale_0p50": {
+      "description": "multiply residual correction by 0.50",
+      "name": "Gamma scale 0.50"
+    },
+    "RP6_gamma_scale_1p00": {
+      "description": "multiply residual correction by 1.00",
+      "name": "Gamma scale 1.00"
+    },
+    "RP6_gamma_scale_1p50": {
+      "description": "multiply residual correction by 1.50",
+      "name": "Gamma scale 1.50"
+    },
+    "RP6_gamma_scale_2p00": {
+      "description": "multiply residual correction by 2.00",
+      "name": "Gamma scale 2.00"
+    }
+  },
+  "weights_json": "/data/lizihao/FreqPRISM-main/results/main/main_fusion_parameters/folded_weights.json"
+}

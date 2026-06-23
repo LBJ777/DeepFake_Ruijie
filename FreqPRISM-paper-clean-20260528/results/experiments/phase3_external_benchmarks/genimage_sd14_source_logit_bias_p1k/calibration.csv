@@ -1,0 +1,2 @@
+mode,slope,bias,raw_threshold_equivalent,target_real_fpr_pct,threshold,calibration_count,calibration_real_count,calibration_fake_count,raw_acc,raw_ap,raw_auc,raw_r_acc,raw_f_acc,raw_fpr,raw_fnr,calibrated_acc,calibrated_ap,calibrated_auc,calibrated_r_acc,calibrated_f_acc,calibrated_fpr,calibrated_fnr
+real_fpr_logit_bias,1.0,4.416184902191162,0.011936041992157687,5.0,0.5,2000,1000,1000,99.6,99.99880179581078,99.9988,100.0,99.2,0.0,0.7999999999999972,97.5,99.99880179581078,99.9988,95.0,100.0,5.0,0.0

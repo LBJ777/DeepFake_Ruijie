@@ -1,0 +1,110 @@
+\begin{table*}
+\vspace{-0.3cm}
+\centering
+\resizebox{0.65\textwidth}{!}{
+\begin{tabular}{cccccccccc}
+\toprule
+\multicolumn{10}{c}{RNP defense against backdoored RGA model} \\ \hline
+\multicolumn{1}{c|}{\multirow{2}{*}{Threshold}} &
+  \multicolumn{4}{c|}{Clean$\nearrow$} &
+  \multicolumn{4}{c|}{Dirty$\searrow$} &
+  \multirow{2}{*}{ASR} \\ \cline{2-9}
+\multicolumn{1}{c|}{} &
+  \multicolumn{1}{c|}{mAP} &
+  \multicolumn{1}{c|}{Rank-1} &
+  \multicolumn{1}{c|}{Rank-5} &
+  \multicolumn{1}{c|}{Rank-10} &
+  \multicolumn{1}{c|}{mAP} &
+  \multicolumn{1}{c|}{Rank-1} &
+  \multicolumn{1}{c|}{Rank-5} &
+  \multicolumn{1}{c|}{Rank-10} &
+   \\ \midrule
+\multicolumn{1}{c|}{None} &
+  \multicolumn{1}{c|}{78.50} &
+  \multicolumn{1}{c|}{80.90} &
+  \multicolumn{1}{c|}{91.90} &
+  \multicolumn{1}{c|}{95.30} &
+  \multicolumn{1}{c|}{73.20} &
+  \multicolumn{1}{c|}{75.10} &
+  \multicolumn{1}{c|}{89.00} &
+  \multicolumn{1}{c|}{93.30} &
+  2.10 \\ \hline
+\multicolumn{1}{c|}{0.001} &
+  \multicolumn{1}{c|}{13.40} &
+  \multicolumn{1}{c|}{12.10} &
+  \multicolumn{1}{c|}{27.20} &
+  \multicolumn{1}{c|}{36.40} &
+  \multicolumn{1}{c|}{6.50} &
+  \multicolumn{1}{c|}{5.80} &
+  \multicolumn{1}{c|}{13.60} &
+  \multicolumn{1}{c|}{18.40} &
+  49.45 \\ \hline
+\multicolumn{1}{c|}{0.002} &
+  \multicolumn{1}{c|}{13.80} &
+  \multicolumn{1}{c|}{12.60} &
+  \multicolumn{1}{c|}{27.10} &
+  \multicolumn{1}{c|}{37.90} &
+  \multicolumn{1}{c|}{6.70} &
+  \multicolumn{1}{c|}{6.10} &
+  \multicolumn{1}{c|}{14.10} &
+  \multicolumn{1}{c|}{18.70} &
+  50.66 \\ \hline
+\multicolumn{1}{c|}{0.005} &
+  \multicolumn{1}{c|}{14.00} &
+  \multicolumn{1}{c|}{12.60} &
+  \multicolumn{1}{c|}{28.10} &
+  \multicolumn{1}{c|}{37.60} &
+  \multicolumn{1}{c|}{6.30} &
+  \multicolumn{1}{c|}{5.10} &
+  \multicolumn{1}{c|}{13.60} &
+  \multicolumn{1}{c|}{18.60} &
+  50.53 \\ \hline
+\multicolumn{1}{c|}{0.01} &
+  \multicolumn{1}{c|}{12.60} &
+  \multicolumn{1}{c|}{12.10} &
+  \multicolumn{1}{c|}{25.00} &
+  \multicolumn{1}{c|}{33.70} &
+  \multicolumn{1}{c|}{6.30} &
+  \multicolumn{1}{c|}{6.00} &
+  \multicolumn{1}{c|}{13.60} &
+  \multicolumn{1}{c|}{18.80} &
+  44.21 \\ \hline
+\multicolumn{1}{c|}{0.02} &
+  \multicolumn{1}{c|}{9.90} &
+  \multicolumn{1}{c|}{10.00} &
+  \multicolumn{1}{c|}{19.90} &
+  \multicolumn{1}{c|}{26.60} &
+  \multicolumn{1}{c|}{6.40} &
+  \multicolumn{1}{c|}{6.10} &
+  \multicolumn{1}{c|}{13.80} &
+  \multicolumn{1}{c|}{18.60} &
+  30.08 \\ \hline
+\multicolumn{1}{c|}{0.05} &
+  \multicolumn{1}{c|}{6.20} &
+  \multicolumn{1}{c|}{5.80} &
+  \multicolumn{1}{c|}{13.40} &
+  \multicolumn{1}{c|}{18.60} &
+  \multicolumn{1}{c|}{4.50} &
+  \multicolumn{1}{c|}{4.40} &
+  \multicolumn{1}{c|}{9.70} &
+  \multicolumn{1}{c|}{13.40} &
+  27.96 \\ \hline
+\multicolumn{1}{c|}{0.1} &
+  \multicolumn{1}{c|}{1.90} &
+  \multicolumn{1}{c|}{1.40} &
+  \multicolumn{1}{c|}{3.80} &
+  \multicolumn{1}{c|}{5.90} &
+  \multicolumn{1}{c|}{1.30} &
+  \multicolumn{1}{c|}{0.60} &
+  \multicolumn{1}{c|}{2.90} &
+  \multicolumn{1}{c|}{4.40} &
+  25.42 \\ \bottomrule
+\end{tabular}
+}
+\caption{
+RNP defense against backdoored RGA model. The model was attacked by BadEdge attack on CUHK03 dataset with $\rho=2.0\%$ and GWTA.}
+% 
+% \caption
+\label{tab:RNP}
+\vspace{-0.6cm}
+\end{table*}
