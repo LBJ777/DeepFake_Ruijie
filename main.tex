@@ -113,16 +113,16 @@ The shift toward multi-cue detectors introduces a second problem that is less vi
 
 Figure~\ref{fig:prior_evidence_map} illustrates the evidence motivation behind the design. Real and generated images can be visually plausible in RGB space, while residual, spectral, and fine-texture views expose different low-level responses. These views are not used as manually thresholded maps. Instead, they motivate source-fitted component priors whose complementary evidence can be fused into a single locked image-level score.
 
+FUSEGuard is a source-only multi-prior detector for cross-generator AI-generated image detection. It combines four complementary scores: a whole-image artifact prior from explicit low-level statistics, a native-tile artifact pathway for local high-resolution evidence, a semantic prior from frozen CLIP features with a source-fitted linear probe, and a residual prior based on nearest-neighbor down-up reconstruction traces. The components are fused in logit space using constants selected only from source-gate evidence, and the final decision threshold is fixed at $0.50$ before any target benchmark is evaluated. Target labels are reserved for report-only metrics.
+
+The design goal is an auditable detector rather than a target-adapted ensemble. Source data fit the component priors and select compact fusion constants. Target benchmarks are used only to measure the locked detector. This setting is evaluated on AIGCDetectBenchmark \cite{zhong2023patchcraft}, UniversalFakeDetect \cite{ojha2023univfd}, and GenImage \cite{zhu2023genimage}. Under the locked protocols, FUSEGuard reaches 94.82\% Acc and 99.34\% AP on AIGCDetectBenchmark, 89.39\% Acc and 99.24\% AP on UniversalFakeDetect, and 93.84\% Acc and 98.50\% AP on GenImage. Ranking metrics are reported with fixed-threshold accuracy and real/fake splits because high ranking quality can still coexist with asymmetric calibration errors. At the generator level, Figure~\ref{fig:aigcdetectbenchmark_radar} presents the AIGCDetectBenchmark comparison, where FUSEGuard obtains the highest mean Acc among representative classic and contemporary detectors across 17 generators.
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{fig2_prior_evidence_map}
 \caption{Prior evidence maps for FUSEGuard. Columns show the input image, the absolute residual map after low-pass removal, the log-magnitude Fourier spectrum, and the spatial fine-texture energy map. The upper block contains real images, and the lower block contains generated images. These examples illustrate how residual, spectral, and local-texture responses can expose signals that are not obvious in RGB space, motivating their use as complementary evidence for AI-generated image detection.}
 \label{fig:prior_evidence_map}
 \end{figure}
-
-FUSEGuard is a source-only multi-prior detector for cross-generator AI-generated image detection. It combines four complementary scores: a whole-image artifact prior from explicit low-level statistics, a native-tile artifact pathway for local high-resolution evidence, a semantic prior from frozen CLIP features with a source-fitted linear probe, and a residual prior based on nearest-neighbor down-up reconstruction traces. The components are fused in logit space using constants selected only from source-gate evidence, and the final decision threshold is fixed at $0.50$ before any target benchmark is evaluated. Target labels are reserved for report-only metrics.
-
-The design goal is an auditable detector rather than a target-adapted ensemble. Source data fit the component priors and select compact fusion constants. Target benchmarks are used only to measure the locked detector. This setting is evaluated on AIGCDetectBenchmark \cite{zhong2023patchcraft}, UniversalFakeDetect \cite{ojha2023univfd}, and GenImage \cite{zhu2023genimage}. Under the locked protocols, FUSEGuard reaches 94.82\% Acc and 99.34\% AP on AIGCDetectBenchmark, 89.39\% Acc and 99.24\% AP on UniversalFakeDetect, and 93.84\% Acc and 98.50\% AP on GenImage. Ranking metrics are reported with fixed-threshold accuracy and real/fake splits because high ranking quality can still coexist with asymmetric calibration errors. At the generator level, Figure~\ref{fig:aigcdetectbenchmark_radar} presents the AIGCDetectBenchmark comparison, where FUSEGuard obtains the highest mean Acc among representative classic and contemporary detectors across 17 generators.
 
 The paper makes the following contributions:
 \begin{itemize}
@@ -132,14 +132,14 @@ The paper makes the following contributions:
     \item Source-locked validation across AIGCDetectBenchmark, UniversalFakeDetect, and GenImage under ProGAN-source and Stable Diffusion v1.4-source protocols. Component ablations, real/fake splits, and ranking-versus-threshold diagnostics show where the priors complement each other and where fixed-threshold calibration remains limiting.
 \end{itemize}
 
-The rest of the paper is organized as follows. Section~\ref{sec:related_work} reviews low-level, residual, semantic, and benchmark-oriented detection work. Section~\ref{sec:method} defines the source-only protocol and the FUSEGuard scoring pipeline. Section~\ref{sec:experiments} reports cross-benchmark results, robustness tests, ablations, and qualitative spatial-attribution analysis. Section~\ref{sec:discussion} discusses calibration behavior and limitations. The last section concludes the paper.
+The rest of the paper is organized as follows. Section~\ref{sec:related_work} reviews low-level artifact and frequency cues, residual and reconstruction cues, semantic hybrid detectors, and evaluation protocols. Section~\ref{sec:method} defines the source-only protocol and the FUSEGuard scoring pipeline. Section~\ref{sec:experiments} reports cross-benchmark results, robustness tests, ablations, and qualitative spatial-attribution analysis. Section~\ref{sec:discussion} discusses calibration behavior and limitations. The last section concludes the paper.
 
 \section{Related Work}
 \label{sec:related_work}
 
 AI-generated image detection has been approached through several evidence families, each making a different assumption about what should remain stable across generators. Spatial detectors rely on visual artifacts left by synthesis pipelines \cite{wang2020cnnspot,liu2020gramnet,zhong2023patchcraft}; frequency and photographic-statistics methods search for signal-level regularities \cite{frank2020frequency,liu2022realimages,zhong2025beyond}; residual and reconstruction methods use inverse or perturbation behavior as evidence \cite{tan2023lgrad,tan2024npr,wang2023dire}; and semantic or hybrid detectors exploit transferable representation spaces \cite{radford2021clip,ojha2023univfd,yan2025aide,cheng2025cospy}. Prior work is therefore grouped into low-level forensic cues, residual and reconstruction cues, semantic and hybrid detectors, and evaluation protocols, emphasizing the evidence assumptions behind each line rather than benchmark ranking alone.
 
-\subsection{Low-Level Artifact and Forensic Cues}
+\subsection{Low-Level Artifact and Frequency Cues}
 Early cross-generator work showed that synthesis pipelines leave learnable spatial traces. CNNSpot demonstrated transfer from a ProGAN-trained classifier to several unseen CNN-based generators when augmentation and preprocessing are carefully controlled \cite{wang2020cnnspot}. This protocol remains influential, but it also exposes a weakness of purely supervised artifact learning: the detector can inherit source-generator and source-data biases rather than a stable notion of photographic authenticity.
 
 Later spatial and texture-oriented detectors made the artifact hypothesis more structured. GramNet models global texture statistics for fake-face detection \cite{liu2020gramnet}, PatchCraft emphasizes local texture patches and rich/poor texture contrast \cite{zhong2023patchcraft}, and Fusing combines image-level and local evidence for generalized synthesized-image detection \cite{ju2022fusing}. FerretNet further exploits local-pixel dependency patterns for efficient synthetic-image detection \cite{liang2025ferretnet}. Other work targets the source-bias problem more directly through bias-free generation protocols or information-bottleneck objectives \cite{guillaro2025biasfree,zhang2025vibnet}. These studies motivate an artifact prior, but they also argue against treating a single artifact classifier as sufficient for open-generator detection.
@@ -148,23 +148,23 @@ Frequency and photographic-statistics methods seek traces that are less semantic
 
 A complementary low-level strategy anchors the decision on real-image statistics. Detecting Generated Images by Real Images, often abbreviated as LNP in benchmark reports, models noise and frequency patterns of real images for cross-generator authentication \cite{liu2022realimages}, and its real-image-only extension moves toward one-class detection \cite{bi2023realonly}. Beyond Generation estimates a real-image feature distribution using diffusion-model features \cite{zhong2025beyond}, while ID-energy detection treats synthetic patterns as out-of-distribution samples relative to natural-image patterns \cite{cai2025generalizable}. SDAIE further uses camera metadata as a self-supervised signal and can be evaluated in one-class or binary-source settings \cite{zhong2026metadata}; related camera-pipeline work exploits demosaicing-guided color correlations \cite{zhong2026color}. These studies support the use of low-level priors, while highlighting that camera and frequency cues should be combined with other evidence rather than used as the only basis for a fixed threshold.
 
-\subsection{Gradient, Residual, and Reconstruction Cues}
+\subsection{Residual and Reconstruction Cues}
 Residual and reconstruction methods use the behavior of auxiliary models or image operators to expose traces that may not be visible in RGB space. LGrad represents an image through gradients of a pretrained model, aiming to capture more general artifact evidence \cite{tan2023lgrad}. NPR revisits nearest-neighbor relationships induced by upsampling and models neighboring-pixel regularities shared across GAN and diffusion images \cite{tan2024npr}. These approaches are closely related to the residual prior, but its use is deliberately constrained: residual evidence is treated as a calibrated correction signal instead of a standalone detector.
 
 Reconstruction-based detectors are especially prominent for diffusion-generated images. DIRE uses diffusion reconstruction error as evidence of synthesis \cite{wang2023dire}; AEROBLADE uses autoencoder reconstruction error for training-free latent-diffusion detection \cite{ricker2024aeroblade}; LaRE\textsuperscript{2} moves reconstruction-error analysis into latent space \cite{luo2024lare2}; FakeInversion detects unseen text-to-image models through Stable Diffusion inversion \cite{cazenavette2024fakeinversion}; and FIRE introduces frequency-guided reconstruction error for robust diffusion-image detection \cite{chu2025fire}. Related zero-shot work exploits generative-model bias through model-agnostic training-free detection, score-function geometry, or denoising-trajectory differences \cite{he2024rigid,brokman2025manifold,liang2025trajectory}. These methods provide strong evidence, but their scores can depend on the chosen inverse process, autoencoder, or diffusion prior. This motivates combining residual or reconstruction cues with artifact and semantic evidence under a locked operating rule.
 
-\subsection{Semantic and Hybrid Detectors}
+\subsection{Semantic and Hybrid Detection Cues}
 Foundation models have shifted the field from detector-specific feature learning toward transferable representation spaces. CLIP provides large-scale vision-language features that transfer across visual tasks \cite{radford2021clip}. UnivFD showed that simple nearest-neighbor or linear-probe rules in a frozen vision-language feature space can generalize across generator families better than conventional real-vs-fake classifiers trained on one fake source \cite{ojha2023univfd}. Follow-up CLIP-based work found that few examples from one generator can provide strong out-of-distribution and robustness performance \cite{cozzolino2024clip}, while C2P-CLIP improves CLIP-based generalization by injecting category-common prompts \cite{tan2025c2pclip}. The strength of this paradigm is that the representation is not learned solely from one real/fake split; its limitation is that semantic transfer alone may miss low-level traces.
 
 Recent hybrid detectors therefore combine representation-level and low-level evidence. AIDE integrates CLIP-level semantics with patch-level features and shows that visually challenging generated images remain difficult for existing detectors \cite{yan2025aide}. FatFormer adapts CLIP features with image, frequency, and language-guided forgery cues \cite{liu2024fatformer}; CO-SPY combines semantic and pixel-level features \cite{cheng2025cospy}; D$^3$ learns discrepancy cues when scaling detector training across generators \cite{yang2025d3}; RINE leverages intermediate encoder-block representations \cite{koutlis2024rine}; EFFORT decomposes CLIP features into orthogonal subspaces for generalizable detection \cite{yan2024effort}; MCAN aggregates multiple cue experts \cite{tan2026mcan}; and SynerDetect aligns perceptual and generative forensic representations in a unified detection space \cite{li2026synerdetect}. This trend supports multi-evidence detection, but it also raises a protocol question: if multiple cues are fused, the fusion rule and operating threshold must be fixed without target-label feedback.
 
-\subsection{Benchmarks and Calibration Protocols}
+\subsection{Benchmarks and Evaluation Protocols}
 As generators diversify, evaluation protocol has become inseparable from detector design. GenImage provides a million-scale benchmark with cross-generator and degraded-image settings \cite{zhu2023genimage}, and DeepfakeBench emphasizes standardized pipelines for comparing deepfake detectors \cite{yan2023deepfakebench}. AIDE's Chameleon analysis and recent real-world robustness benchmarks show that detector behavior can change across visually challenging samples, scenario shift, degradation, and semantic diversity \cite{yan2025aide,li2025rrdataset}. Calibration is another protocol risk: threshold choice and score calibration can substantially change reported accuracy \cite{yang2026calibrated}. These studies indicate that high benchmark accuracy is not sufficient if the score, model variant, fusion constant, or decision threshold is selected using target information. Existing work has produced strong single-signal detectors, broad benchmarks, and increasingly capable hybrid models; however, when complementary cues are fused, the source-only locking protocol itself is often not the central object of study. This paper therefore studies artifact, semantic, and residual priors under a locked fusion and threshold rule, reserving target labels only for reporting.
 
 \section{Method}
 \label{sec:method}
 
-\subsection{Detection Setting and Source-Only Protocol}
+\subsection{Source-Only Detection Protocol}
 \label{sec:problem_formulation}
 
 This section begins by defining the detection setting and the source-only rule that constrains all later design choices.
@@ -215,14 +215,14 @@ $R(x)$\newline Residual prior & Source-trained ResNet-50 residual classifier; ep
 \end{tabularx}
 \end{table*}
 
-\subsection{Source-Only Multi-Prior Scoring}
+\subsection{Multi-Prior Score Construction}
 \label{sec:method_scoring}
 
 Under the source-only protocol, the detector must convert heterogeneous cues into one deployable score without using target labels for calibration or model selection. FUSEGuard therefore uses a fixed multi-prior scoring pipeline. For an input image $x$, four source-fitted components produce scalar scores: a whole-image artifact score $W(x)$ from explicit low-level artifact features, a native-tile artifact score $T(x)$ from local high-resolution evidence, a semantic score $S(x)$ from a frozen CLIP image encoder with a source-fitted linear probe, and a residual score $R(x)$ from a nearest-neighbor down-up reconstruction residual branch. These quantities are used as bounded component scores and mapped to clipped logits only inside the fusion rule. The source-gate stress constraints limit score drift and fixed-threshold flips after fusion, rather than claiming that the heterogeneous component probabilities are perfectly calibrated across domains. The resulting locked fake score is denoted by $f(x)$.
 
 The four scores are not treated as interchangeable ensemble members. The whole-image artifact prior anchors the decision with low-level authenticity evidence; the native-tile pathway contributes only when local artifact evidence is stronger than the whole-image estimate; the semantic prior supplies signed representation-level evidence from a pretrained vision-language feature space; and the residual prior adds a controlled correction for nearest-neighbor down-up reconstruction traces. This design keeps the detector interpretable at the component level while preserving the protocol constraint that all fusion choices are fixed before target evaluation.
 
-Algorithm~\ref{alg:source_locking} summarizes how the fusion constants are selected before target evaluation. The algorithm operates only on the source-gate cache and the fixed threshold. It does not inspect target scores, target labels, or per-generator target summaries.
+Algorithm~\ref{alg:source_locking} summarizes how the fusion constants are selected before target evaluation. The algorithm operates only on the source-gate cache and the fixed threshold. It does not inspect target scores, target labels, or generator-level target reports. The cache is used only to compare source-side candidate rules under the deployed threshold.
 
 \begin{algorithm}[t]
 \caption{Source-only fusion calibration}
@@ -249,7 +249,7 @@ Algorithm~\ref{alg:source_locking} summarizes how the fusion constants are selec
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Artifact Prior and Native-Tile Evidence}
+\subsection{Whole-Image and Native-Tile Artifact Evidence}
 \label{sec:method_artifact}
 
 The artifact prior converts explicit low-level image statistics into an image-level fake score. For an input image, the artifact branch first constructs a $256 \times 256$ artifact view and extracts a feature vector $\phi(x)$. The feature extractor includes statistics from RGB-light, residual, high-pass, local-DCT, and global-FFT views, together with rich spatial statistics, texture artifacts, recompression stability, residual co-occurrence and spectrum, residual-tail shape, chroma-luma coupling, patch-spectrum heterogeneity, and codec-block statistics. In the current implementation, $\phi(x)$ has 849 dimensions. Let $\phi_{\mathrm{C}}(x)$ and $\phi_{\mathrm{Q}}(x)$ denote the codec-block and chroma-luma feature blocks extracted from $\phi(x)$. Two source-fitted experts are trained from source labels: a codec expert $C(\cdot)$, implemented as a histogram gradient boosting classifier on codec-block features, and a chroma expert $Q(\cdot)$, implemented as a standardized logistic regression probe on fine chroma-luma coupling features. Both experts output fake probabilities. The artifact training record uses expanded source variants consisting of clean images, two JPEG-quality-50 copies, half-scale resize, and Gaussian blur radius 1, with no target labels.
@@ -274,12 +274,12 @@ where $\{t_j\}$ are the extracted native tiles. The positive tile increment over
 \]
 This design lets a strong local artifact increase fake evidence while preventing low-scoring tiles from suppressing a reliable whole-image artifact score.
 
-\subsection{Semantic Prior}
+\subsection{Semantic Evidence from a Frozen CLIP Probe}
 \label{sec:method_semantic}
 
 The semantic prior supplies representation-level evidence that is not learned from low-level artifact statistics alone. It uses a frozen CLIP ViT-L/14 image encoder \cite{radford2021clip}. The CLIP encoder is not fine-tuned. Given an image $x$, the frozen encoder produces the image representation $z(x)=E_{\mathrm{CLIP}}(x)$. A source-only logistic regression probe $g_{\mathrm{S}}$ is then fitted using CLIP features and source labels, producing the semantic fake score $S(x)=\sigma(g_{\mathrm{S}}(z(x)))$. The probe uses L2-normalized CLIP features, a standardization layer, and a balanced logistic regression classifier with fixed regularization $C=1.0$ on the clean image view. The training script records source-side diagnostic metrics for the probe, but these diagnostics are not used to choose the CLIP backbone, regularization, score variant, fusion constants, or threshold. Target labels are not used to choose the CLIP backbone, the probe regularization, the score variant, or the final semantic contribution. In the fusion rule, $S(x)$ is treated as signed evidence: positive semantic logits support the fake class, while negative semantic logits support the real class. Separate coefficients are used for positive and negative semantic evidence because their calibration roles differ under domain shift.
 
-\subsection{Residual Prior}
+\subsection{Nearest-Neighbor Residual Evidence}
 \label{sec:method_residual}
 
 The residual prior adds a correction signal based on nearest-neighbor down-up traces. This branch follows the observation that neighboring-pixel and upsampling residuals expose artifacts that may not be captured by RGB classifiers alone \cite{tan2024npr}. Let $\tilde{x}$ denote the residual-branch tensor after RGB conversion, even-size cropping, tensor conversion, and ImageNet normalization. During training, $\tilde{x}$ is resized to $256 \times 256$; in the locked inference configuration, the residual branch uses the native even-cropped resolution. Let $D_{\mathrm{nn}}$ and $U_{\mathrm{nn}}$ denote nearest-neighbor downsampling and upsampling by a factor of two. The residual input is given by
@@ -288,7 +288,7 @@ The residual prior adds a correction signal based on nearest-neighbor down-up tr
 \]
 A ResNet-50 binary classifier $g_{\mathrm{R}}$ maps this residual tensor to a fake logit, producing the residual score $R(x)=\sigma(g_{\mathrm{R}}(\rho(x)))$. The residual model is trained on source images for two epochs with binary cross-entropy, and the locked runtime configuration uses the epoch-1 checkpoint. This checkpoint choice is part of the source-side configuration record and is fixed before any target report is generated. In the final detector, the residual branch is not used as a standalone classifier. It enters only through the low-weight logit correction in Section~\ref{sec:method_fusion}, which limits the influence of residual scores that may vary with the reconstruction operator and preprocessing resolution.
 
-\subsection{Source-Only Fusion and Inference}
+\subsection{Source-Gated Logit Fusion and Locked Inference}
 \label{sec:method_fusion}
 
 FUSEGuard fuses the four prior scores in logit space. Let $m(x)=\mathbb{I}\{\operatorname{maxside}(x)>960\}$ be the high-resolution indicator, and let $\Delta_{\mathrm{T}}(x)$ be the positive tile increment defined above. The semantic coefficient for positive evidence is defined as
@@ -370,7 +370,7 @@ The procedure is an inference routine rather than a second calibration stage: St
 \label{sec:experiments}
 FUSEGuard is evaluated under two source protocols. The primary protocol follows the common ProGAN-to-unseen-generator setting: the detector is fitted and locked with ProGAN source data, then reported on AIGCDetectBenchmark \cite{zhong2023patchcraft} and UniversalFakeDetect. The second protocol follows the GenImage setting, where the source generator is Stable Diffusion v1.4 and the detector is evaluated across the GenImage validation generators. In both protocols, target labels are reserved for final reporting and are not used to select components, fusion constants, calibration parameters, or thresholds.
 
-\subsection{Experimental Setup}
+\subsection{Evaluation Protocols and Metrics}
 \label{sec:experimental_setup}
 
 \textbf{Datasets.}
@@ -418,7 +418,7 @@ All reports use the FUSEGuard scoring pipeline described in Section~\ref{sec:met
 \textbf{Metrics.}
 Following common reports on AIGCDetectBenchmark, UniversalFakeDetect, and GenImage, the evaluation uses classification accuracy (Acc) and average precision (AP) as the primary comparable metrics \cite{ojha2023univfd,zhong2023patchcraft,zhu2023genimage,yan2025aide}. The area under the ROC curve (AUC) and the real/fake accuracy split are also reported. Acc, Real, and Fake are threshold metrics computed at $\tau=0.50$ after the source-side locking or calibration step, whereas AP and AUC are threshold-free ranking metrics. AUC complements AP by summarizing ROC ordering across operating points, and the Real/Fake split exposes asymmetric calibration errors that can be hidden by mean Acc. These added diagnostics are reported after locking and are not used for model selection.
 
-\subsection{Benchmark-Level Reports}
+\subsection{Locked Scores Transfer Across Benchmarks}
 \label{sec:benchmark_reports}
 
 \begin{table}[t]
@@ -444,7 +444,7 @@ The compact report across the three evaluated benchmarks is given in Table~\ref{
 
 These results motivate two reporting choices. First, AP and AUC are not sufficient for this detector, because the fixed decision threshold exposes benchmark-specific shifts. Second, the source protocol must be stated with each benchmark. AIGCDetectBenchmark and UniversalFakeDetect evaluate the same ProGAN-source locked detector, whereas GenImage evaluates the same FUSEGuard design with a GenImage SD v1.4 source and source-only probability calibration.
 
-\subsection{Cross-Generator Behavior}
+\subsection{Generator-Level Transfer to Unseen Synthesis Processes}
 \label{sec:cross_generator_behavior}
 
 The generator-level transfer results for AIGCDetectBenchmark \cite{zhong2023patchcraft} are reported in Table~\ref{tab:aigcdetect_comparison}. The main text uses Acc because recent AIGCDetectBenchmark reports provide complete 17-generator Acc more consistently than per-generator AP. The full AP counterpart is provided after the references in the reproducibility checklist (Table~\ref{tab:aigcdetect_ap_comparison}) using the same layout. The best and second-best reported values in each column are marked in bold and underlined, respectively.
@@ -559,7 +559,7 @@ Mean & \pair{69.58}{83.58} & \pair{80.28}{86.35} & \pair{87.56}{92.76} & \pair{8
 
 \begin{figure*}[!t]
 \centering
-\includegraphics[width=0.9\textwidth]{fig4_generator_embedding_scatter}
+\includegraphics[width=0.95\textwidth]{fig4_generator_embedding_scatter}
 \caption{Generator-wise embedding visualization of FUSEGuard evidence features. Each panel shows a two-dimensional t-SNE projection for one generator family. Red points denote real images and blue points denote generated images, with balanced samples per class. The repeated local separation across GAN, diffusion, and commercial-generator subsets suggests that the prior-fusion evidence space captures transferable cues while retaining generator-specific distribution patterns. Because each projection is fitted independently, coordinates indicate local separability rather than a shared global axis.}
 \label{fig:generator_embedding_scatter}
 \end{figure*}
@@ -570,7 +570,7 @@ The visualization in Figure~\ref{fig:generator_embedding_scatter} presents a com
 
 % \FloatBarrier
 
-\subsection{Input Perturbation Robustness}
+\subsection{Post-Processing Robustness to Compression and Blur}
 \label{sec:input_perturbation_robustness}
 
 \begin{table}[t]
@@ -609,7 +609,7 @@ Gaussian blur shows the clearest robustness advantage. FUSEGuard obtains the bes
 
 % \FloatBarrier
 
-\subsection{Component Ablation}
+\subsection{Component Necessity and Fusion Sensitivity}
 \label{sec:ablation_study}
 
 \begin{table}[t]
@@ -661,7 +661,7 @@ Taken together, the ablation and sensitivity results in Table~\ref{tab:prior_abl
 
 The same diagnostics also explain why the paper reports fixed-threshold Acc alongside AP. A coefficient setting can preserve ranking while shifting the decision boundary, and a removed branch can change Real and Fake accuracies in opposite directions. The experimental section therefore treats mean Acc, AP, and the Real/Fake split as complementary measurements of one locked detector. This convention keeps the strong cases and the remaining calibration failures visible under the same source-only protocol.
 
-\subsection{Qualitative Spatial Attribution Maps}
+\subsection{Spatial Evidence Maps of Fused Cues}
 \label{sec:spatial_attribution_maps}
 
 \begin{figure*}[!t]
@@ -675,7 +675,7 @@ To complement the quantitative analyses, Figure~\ref{fig:spatial_attribution_map
 
 \FloatBarrier
 
-\section{Discussion}
+\section{Discussion and Limitations}
 \label{sec:discussion}
 
 The central contribution of FUSEGuard is a locked operating rule for cross-generator detection. In this setting, the detector cannot be revised after target labels become available. Component priors are fitted on source data, fusion constants are selected from a source-gate split, and the final threshold remains $0.50$ before target benchmarks are inspected. This design does not eliminate domain shift. Its value is that any remaining shift is exposed in the reported metrics rather than absorbed by target-side threshold, checkpoint, or fusion-weight selection.
@@ -692,23 +692,22 @@ Several limitations constrain the interpretation of the results. FUSEGuard uses 
 \label{sec:conclusion}
 This work examined a practical question for cross-generator AI-generated image detection: what can be trusted when target labels are unavailable for detector selection? FUSEGuard addresses this question by treating the detector as a locked operating rule rather than a collection of scores that can be adjusted after evaluation begins. Its source-guarded fusion integrates artifact, native-tile, semantic, and residual priors into a single fake score, and the experiments show that this design transfers across three public benchmarks while preserving an explicit threshold. The same results also expose the limits of the approach: artifact cues remain the main fake-side evidence, and shifted generators can still move the fixed threshold toward asymmetric real/fake errors. The broader implication is therefore procedural as much as architectural. For cross-generator AI-generated image detection to be deployable and comparable, future reports should specify how scores, fusion constants, calibration, and thresholds are locked before target data are used.
 
-\FloatBarrier
+\clearpage
 \appendices
-\section{Benchmark Composition}
+\section{External Benchmark Composition and Domain Shift}
 
 This appendix records the benchmark composition used by the external evaluations. It is included as protocol documentation rather than as an additional performance comparison. Tables~\ref{tab:appendix_genimage_statistics} and \ref{tab:appendix_ufd_statistics} list the source generator, target generators, image sizes, sample counts, and image sources for GenImage and UniversalFakeDetect, respectively.
 
 The two tables define the domain changes represented by the external results. GenImage follows a Stable Diffusion v1.4-source protocol with ImageNet as the paired real-image source, whereas UniversalFakeDetect follows a ProGAN-source protocol and evaluates a broader mixture of GAN, diffusion, face, restoration, and low-light subsets. The Source column identifies the real-image pool, caption source, or restoration source associated with each split. Image Size records the released or generated resolution used by the benchmark, and Number gives the total image count for the corresponding row.
 
 These details are reported because cross-generator scores are affected by more than the target generator name. A target split may differ from the source setting in generator family, real-image distribution, resolution, preprocessing, and degradation type. The composition tables therefore specify the evaluation conditions under which the supplementary AP and ablation results should be read, while preserving the report-only role of target benchmarks.
-
-\begin{table*}[!b]
+\begin{table}[!t]
 \caption{Composition of the GenImage benchmark. SD refers to Stable Diffusion. Number reports the total image count for each row, including generated images and paired real images from the same source.}
 \label{tab:appendix_genimage_statistics}
 \centering
 \small
 \renewcommand{\arraystretch}{1.04}
-\setlength{\tabcolsep}{12pt}
+\setlength{\tabcolsep}{4.0pt}
 \begin{tabular}{@{}c|cccc@{}}
 \toprule
 & \textbf{Generator} & \textbf{Image Size} & \textbf{Number} & \textbf{Source} \\
@@ -726,15 +725,15 @@ These details are reported because cross-generator scores are affected by more t
 & Wukong \cite{wukong2023} & $512\times512$ & 24.0k & ImageNet \\
 \bottomrule
 \end{tabular}
-\end{table*}
+\end{table}
 
-\begin{table*}[!t]
-\caption{Composition of the UniversalFakeDetect benchmark \cite{ojha2023univfd,wang2020cnnspot}. Number reports the total image count for each row. The train row follows the 100k ProGAN-source protocol used here. Image Size follows the released benchmark preprocessing; the value denotes released native/restoration resolutions rather than one fixed square size.}
+\begin{table}[!t]
+\caption{Composition of the UniversalFakeDetect benchmark \cite{ojha2023univfd,wang2020cnnspot}. WFIR denotes WhichFaceIsReal. Number reports the total image count for each row. The train row follows the 100k ProGAN-source protocol used here. Image Size follows the released benchmark preprocessing; the value denotes released native/restoration resolutions rather than one fixed square size.}
 \label{tab:appendix_ufd_statistics}
 \centering
 \small
 \renewcommand{\arraystretch}{1.02}
-\setlength{\tabcolsep}{7pt}
+\setlength{\tabcolsep}{1pt}
 \begin{tabular}{@{}c|cccc@{}}
 \toprule
 & \textbf{Generator} & \textbf{Image Size} & \textbf{Number} & \textbf{Source} \\
@@ -749,13 +748,13 @@ These details are reported because cross-generator scores are affected by more t
 & StarGAN \cite{choi2018stargan} & $256\times256$ & 4.0k & CelebA \cite{liu2015celeba} \\
 & GauGAN \cite{park2019spade} & $256\times256$ & 10.0k & COCO \cite{lin2014coco} \\
 & StyleGAN2 \cite{karras2020stylegan2} & $256\times256$ & 16.0k & LSUN \\
-& WhichFaceIsReal \cite{whichfaceisreal2023} & $1024\times1024$ & 2.0k & FFHQ \cite{karras2019stylegan} \\
+& WFIR \cite{whichfaceisreal2023} & $1024\times1024$ & 2.0k & FFHQ \cite{karras2019stylegan} \\
 & DeepFake & short side 256 & 5.4k & FaceForensics++ \cite{rossler2019faceforensics} \\
 & SITD \cite{chen2018sid} & variable & 0.4k & SID low-light data \\
 & SAN \cite{dai2019san} & variable & 0.4k & SR benchmarks \\
 & CRN \cite{chen2017crn} & $256\times256$ & 12.8k & GTA \cite{richter2016playing} \\
 & IMLE \cite{li2019imle} & $256\times256$ & 12.8k & GTA \\
-& Guided diffusion \cite{dhariwal2021diffusion} & $256\times256$ & 2.0k & LAION captions \cite{schuhmann2021laion400m} \\
+& Guided \cite{dhariwal2021diffusion} & $256\times256$ & 2.0k & LAION captions \cite{schuhmann2021laion400m} \\
 & LDM-100 \cite{rombach2022ldm} & $256\times256$ & 2.0k & LAION captions \\
 & LDM-200 & $256\times256$ & 2.0k & LAION captions \\
 & LDM-200-CFG & $256\times256$ & 2.0k & LAION captions \\
@@ -765,10 +764,11 @@ These details are reported because cross-generator scores are affected by more t
 & DALL-E \cite{ramesh2021dalle} & $256\times256$ & 2.0k & LAION captions \\
 \bottomrule
 \end{tabular}
-\end{table*}
+\end{table}
 
-\FloatBarrier
-\section{Additional Average-Precision Results}
+
+
+\section{Threshold-Free Ranking Results}
 
 The AP counterparts to the main-text Acc comparisons on AIGCDetectBenchmark and GenImage are reported in Tables~\ref{tab:aigcdetect_ap_comparison} and \ref{tab:genimage_ap_comparison}, respectively. They use the same source-locked protocols as the main-text tables and keep the same generator order and highlighting convention. All AP values are computed after the detector, fusion constants, score variant, and threshold have been fixed.
 
@@ -776,7 +776,7 @@ These tables separate score ranking from fixed-threshold deployment behavior. AP
 
 For this reason, the AP values are reported as final measurements rather than as selection criteria. They do not determine model checkpoints, score normalization, fusion constants, generator subsets, or thresholds. The main text retains Acc and class-wise accuracy as the primary evidence for deployable operating behavior, while these appendix tables show whether the same locked scores preserve ranking quality.
 
-\begin{table*}[!b]
+\begin{table*}[!t]
 \caption{Comparison on AIGCDetectBenchmark. Each entry reports AP (\%) for detecting real and fake images from the generator named in the column. DIRE-G denotes the ProGAN-source DIRE variant, whereas DIRE-D follows the ADM-source DIRE setup; SDAIE is the one-class variant, whereas SDAIE$^\dagger$ is the binary ProGAN-source variant. The best and second-best values in each column are marked in bold and underline, respectively.}
 \label{tab:aigcdetect_ap_comparison}
 \centering
@@ -842,8 +842,8 @@ Ours & -- & 92.05 & \textbf{99.19} & \textbf{100.00} & \textbf{100.00} & \textbf
 \end{tabularx}
 \end{table*}
 
-\FloatBarrier
-\section{External Component Ablations}
+
+\section{External-Benchmark Component Ablations}
 
 The external-benchmark core component ablations are reported in Tables~\ref{tab:appendix_ufd_prior_ablation} and \ref{tab:appendix_genimage_prior_ablation}. They extend the main-text ablation analysis by checking whether the branch roles observed on AIGCDetectBenchmark persist when the benchmark and source protocol change.
 
@@ -852,11 +852,15 @@ The rows should be read by comparing both the mean metrics and the Real/Fake spl
 \providecommand{\tabyes}{\ding{51}}
 \providecommand{\tabno}{\ding{55}}
 
-\begin{table}[!b]
+\begin{table*}[!t]
 \centering
 \small
 \renewcommand{\arraystretch}{1.04}
 \setlength{\tabcolsep}{1.6pt}
+\providecommand{\tabyes}{\ding{51}}
+\providecommand{\tabno}{\ding{55}}
+\begin{minipage}[t]{0.49\textwidth}
+\centering
 \caption{Core component ablation on UniversalFakeDetect.}
 \label{tab:appendix_ufd_prior_ablation}
 \begin{tabular}{@{}ccccrrrr@{}}
@@ -878,13 +882,10 @@ Artifact & Semantic & Residual & Native tile & \multicolumn{1}{c}{Acc} & \multic
 \tabyes & \tabyes & \tabyes & \tabyes & \textbf{89.39} & \textbf{99.24} & \textbf{83.36} & \textbf{95.41} \\
 \bottomrule
 \end{tabular}
-\end{table}
-
-\begin{table}[!b]
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.49\textwidth}
 \centering
-\small
-\renewcommand{\arraystretch}{1.04}
-\setlength{\tabcolsep}{1.6pt}
 \caption{Core component ablation on GenImage.}
 \label{tab:appendix_genimage_prior_ablation}
 \begin{tabular}{@{}ccccrrrr@{}}
@@ -906,12 +907,14 @@ Artifact & Semantic & Residual & Native tile & \multicolumn{1}{c}{Acc} & \multic
 \tabyes & \tabyes & \tabyes & \tabyes & \textbf{93.84} & \textbf{98.50} & \textbf{94.91} & \textbf{92.76} \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{minipage}
+\end{table*}
 
 The external ablations reproduce the main diagnostic pattern while also exposing benchmark-specific calibration errors. On UniversalFakeDetect, the full configuration gives the highest Acc and AP, but its Real accuracy remains lower than several reduced variants. This indicates that the ProGAN-source fixed threshold still assigns false-positive fake decisions to some real images. On GenImage, the full configuration gives the best Acc and the most balanced Real/Fake split among the listed rows, whereas artifact-dominant rows obtain high Fake accuracy but severe real-side errors.
 
 These results support the constrained-fusion design without overstating calibration transfer. The reduced variants do not fail in one uniform way: artifact-dominant settings protect fake-side detection at the cost of real-side errors, semantic-only settings improve real-side behavior but weaken fake detection, and residual-only settings shift the balance again. The full configuration is retained as the reportable setting because it gives the strongest joint Acc/AP trade-off under both external protocols. The target benchmarks are used only to report these ablations, not to choose new fusion constants or thresholds.
 
+\clearpage
 \clearpage
 \bibliographystyle{IEEEtran_doi}
 \bibliography{ref}
