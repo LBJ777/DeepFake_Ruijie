@@ -692,14 +692,18 @@ Several limitations constrain the interpretation of the results. FUSEGuard uses 
 \label{sec:conclusion}
 This work examined a practical question for cross-generator AI-generated image detection: what can be trusted when target labels are unavailable for detector selection? FUSEGuard addresses this question by treating the detector as a locked operating rule rather than a collection of scores that can be adjusted after evaluation begins. Its source-guarded fusion integrates artifact, native-tile, semantic, and residual priors into a single fake score, and the experiments show that this design transfers across three public benchmarks while preserving an explicit threshold. The same results also expose the limits of the approach: artifact cues remain the main fake-side evidence, and shifted generators can still move the fixed threshold toward asymmetric real/fake errors. The broader implication is therefore procedural as much as architectural. For cross-generator AI-generated image detection to be deployable and comparable, future reports should specify how scores, fusion constants, calibration, and thresholds are locked before target data are used.
 
-\clearpage
+\FloatBarrier
 \appendices
 \section{Benchmark Composition}
 
-This appendix records the benchmark composition used by the external evaluations. Tables~\ref{tab:appendix_genimage_statistics} and \ref{tab:appendix_ufd_statistics} list the source generator, target generators, image sizes, sample counts, and image sources for GenImage and UniversalFakeDetect, respectively. These statistics are kept separate from the performance tables so that the evaluation protocol is explicit before the scores are read. In both tables, Number denotes the total image count for each row, including generated images and paired real images from the same source unless otherwise noted.
+This appendix records the benchmark composition used by the external evaluations. It is included as protocol documentation rather than as an additional performance comparison. Tables~\ref{tab:appendix_genimage_statistics} and \ref{tab:appendix_ufd_statistics} list the source generator, target generators, image sizes, sample counts, and image sources for GenImage and UniversalFakeDetect, respectively.
+
+The two tables define the domain changes represented by the external results. GenImage follows a Stable Diffusion v1.4-source protocol with ImageNet as the paired real-image source, whereas UniversalFakeDetect follows a ProGAN-source protocol and evaluates a broader mixture of GAN, diffusion, face, restoration, and low-light subsets. The Source column identifies the real-image pool, caption source, or restoration source associated with each split. Image Size records the released or generated resolution used by the benchmark, and Number gives the total image count for the corresponding row.
+
+These details are reported because cross-generator scores are affected by more than the target generator name. A target split may differ from the source setting in generator family, real-image distribution, resolution, preprocessing, and degradation type. The composition tables therefore specify the evaluation conditions under which the supplementary AP and ablation results should be read, while preserving the report-only role of target benchmarks.
 
 \begin{table*}[!b]
-\caption{Statistics of Benchmark GenImage. SD refers to Stable Diffusion. Number reports the total image count for each row, including generated images and paired real images from the same source.}
+\caption{Composition of the GenImage benchmark. SD refers to Stable Diffusion. Number reports the total image count for each row, including generated images and paired real images from the same source.}
 \label{tab:appendix_genimage_statistics}
 \centering
 \small
@@ -724,8 +728,8 @@ This appendix records the benchmark composition used by the external evaluations
 \end{tabular}
 \end{table*}
 
-\begin{table*}[!b]
-\caption{Statistics of Benchmark UniversalFakeDetect \cite{ojha2023univfd,wang2020cnnspot}. Number reports the total image count for each row. The train row follows the 100k ProGAN-source protocol used here. Image Size follows the released benchmark preprocessing; the value denotes released native/restoration resolutions rather than one fixed square size.}
+\begin{table*}[!t]
+\caption{Composition of the UniversalFakeDetect benchmark \cite{ojha2023univfd,wang2020cnnspot}. Number reports the total image count for each row. The train row follows the 100k ProGAN-source protocol used here. Image Size follows the released benchmark preprocessing; the value denotes released native/restoration resolutions rather than one fixed square size.}
 \label{tab:appendix_ufd_statistics}
 \centering
 \small
@@ -763,10 +767,14 @@ This appendix records the benchmark composition used by the external evaluations
 \end{tabular}
 \end{table*}
 
-\clearpage
+\FloatBarrier
 \section{Additional Average-Precision Results}
 
-The AP counterparts to the main-text Acc comparisons on AIGCDetectBenchmark and GenImage are reported in Tables~\ref{tab:aigcdetect_ap_comparison} and \ref{tab:genimage_ap_comparison}, respectively. These results evaluate threshold-free ranking quality under the same locked source protocols used in the main text, so they complement the fixed-threshold tables rather than replace them. They are reported as final measurements rather than as criteria for selecting models, thresholds, or fusion constants. The generator order and highlighting convention follow the corresponding main-text tables.
+The AP counterparts to the main-text Acc comparisons on AIGCDetectBenchmark and GenImage are reported in Tables~\ref{tab:aigcdetect_ap_comparison} and \ref{tab:genimage_ap_comparison}, respectively. They use the same source-locked protocols as the main-text tables and keep the same generator order and highlighting convention. All AP values are computed after the detector, fusion constants, score variant, and threshold have been fixed.
+
+These tables separate score ranking from fixed-threshold deployment behavior. AP evaluates whether generated images are ranked above real images over all possible thresholds. In contrast, the main-text Acc tables evaluate the locked decision rule $f(x)\geq0.50$. A method can therefore have strong AP while still producing asymmetric Real/Fake errors at the deployed threshold. The AP tables should be read as threshold-free evidence about score ordering, not as evidence that the $0.50$ threshold is calibrated for every target generator.
+
+For this reason, the AP values are reported as final measurements rather than as selection criteria. They do not determine model checkpoints, score normalization, fusion constants, generator subsets, or thresholds. The main text retains Acc and class-wise accuracy as the primary evidence for deployable operating behavior, while these appendix tables show whether the same locked scores preserve ranking quality.
 
 \begin{table*}[!b]
 \caption{Comparison on AIGCDetectBenchmark. Each entry reports AP (\%) for detecting real and fake images from the generator named in the column. DIRE-G denotes the ProGAN-source DIRE variant, whereas DIRE-D follows the ADM-source DIRE setup; SDAIE is the one-class variant, whereas SDAIE$^\dagger$ is the binary ProGAN-source variant. The best and second-best values in each column are marked in bold and underline, respectively.}
@@ -806,7 +814,7 @@ Ours & -- & \textbf{100.0} & \textbf{100.0} & 99.3 & 99.8 & \textbf{100.0} & 99.
 \end{tabularx}
 \end{table*}
 
-\begin{table*}[!b]
+\begin{table*}[!t]
 \caption{Comparison on GenImage. Each entry reports AP (\%) for detecting real and fake images from the generator named in the column. The best and second-best values in each column are marked in bold and underline, respectively.}
 \label{tab:genimage_ap_comparison}
 \centering
@@ -834,20 +842,21 @@ Ours & -- & 92.05 & \textbf{99.19} & \textbf{100.00} & \textbf{100.00} & \textbf
 \end{tabularx}
 \end{table*}
 
-\clearpage
+\FloatBarrier
 \section{External Component Ablations}
 
-The external-benchmark core component ablations are reported in Tables~\ref{tab:appendix_ufd_prior_ablation} and \ref{tab:appendix_genimage_prior_ablation} after the AP comparisons. They extend the main-text ablation analysis by checking whether the same priors remain necessary when the target benchmark changes. As in the main text, the point is not only which row scores highest, but how removing a prior shifts the Real/Fake balance under the locked protocol. In both tables, the shaded row denotes the full FUSEGuard configuration. The whole-artifact row uses the whole-image artifact score without native-tile correction, whereas the artifact-only row additionally keeps the native-tile correction.
+The external-benchmark core component ablations are reported in Tables~\ref{tab:appendix_ufd_prior_ablation} and \ref{tab:appendix_genimage_prior_ablation}. They extend the main-text ablation analysis by checking whether the branch roles observed on AIGCDetectBenchmark persist when the benchmark and source protocol change.
 
-\begin{table*}[!b]
-\centering
-\small
+The rows should be read by comparing both the mean metrics and the Real/Fake split. A component can preserve AP while shifting the fixed threshold toward false positives or false negatives, so the class-wise columns are part of the ablation evidence rather than diagnostic extras. In both tables, the shaded row denotes the full FUSEGuard configuration. The whole-artifact row uses only the whole-image artifact score, whereas the artifact-only row adds native-tile correction to the artifact branch.
+
 \providecommand{\tabyes}{\ding{51}}
 \providecommand{\tabno}{\ding{55}}
+
+\begin{table}[!b]
+\centering
+\small
 \renewcommand{\arraystretch}{1.04}
 \setlength{\tabcolsep}{1.6pt}
-\begin{minipage}[t]{0.49\textwidth}
-\centering
 \caption{Core component ablation on UniversalFakeDetect.}
 \label{tab:appendix_ufd_prior_ablation}
 \begin{tabular}{@{}ccccrrrr@{}}
@@ -869,10 +878,13 @@ Artifact & Semantic & Residual & Native tile & \multicolumn{1}{c}{Acc} & \multic
 \tabyes & \tabyes & \tabyes & \tabyes & \textbf{89.39} & \textbf{99.24} & \textbf{83.36} & \textbf{95.41} \\
 \bottomrule
 \end{tabular}
-\end{minipage}
-\hfill
-\begin{minipage}[t]{0.49\textwidth}
+\end{table}
+
+\begin{table}[!b]
 \centering
+\small
+\renewcommand{\arraystretch}{1.04}
+\setlength{\tabcolsep}{1.6pt}
 \caption{Core component ablation on GenImage.}
 \label{tab:appendix_genimage_prior_ablation}
 \begin{tabular}{@{}ccccrrrr@{}}
@@ -894,10 +906,11 @@ Artifact & Semantic & Residual & Native tile & \multicolumn{1}{c}{Acc} & \multic
 \tabyes & \tabyes & \tabyes & \tabyes & \textbf{93.84} & \textbf{98.50} & \textbf{94.91} & \textbf{92.76} \\
 \bottomrule
 \end{tabular}
-\end{minipage}
-\end{table*}
+\end{table}
 
-External ablations match the main AIGCDetectBenchmark analysis. Removing a prior changes the Real/Fake balance rather than only reducing the mean score, and artifact-only variants remain asymmetric across benchmarks. The full configuration is therefore retained as the reportable setting because it is the only one that jointly preserves high Acc, high AP, and stable class-wise behavior under both external source protocols.
+The external ablations reproduce the main diagnostic pattern while also exposing benchmark-specific calibration errors. On UniversalFakeDetect, the full configuration gives the highest Acc and AP, but its Real accuracy remains lower than several reduced variants. This indicates that the ProGAN-source fixed threshold still assigns false-positive fake decisions to some real images. On GenImage, the full configuration gives the best Acc and the most balanced Real/Fake split among the listed rows, whereas artifact-dominant rows obtain high Fake accuracy but severe real-side errors.
+
+These results support the constrained-fusion design without overstating calibration transfer. The reduced variants do not fail in one uniform way: artifact-dominant settings protect fake-side detection at the cost of real-side errors, semantic-only settings improve real-side behavior but weaken fake detection, and residual-only settings shift the balance again. The full configuration is retained as the reportable setting because it gives the strongest joint Acc/AP trade-off under both external protocols. The target benchmarks are used only to report these ablations, not to choose new fusion constants or thresholds.
 
 \clearpage
 \bibliographystyle{IEEEtran_doi}
